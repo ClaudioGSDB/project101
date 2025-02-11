@@ -9,10 +9,8 @@ import {
 	CardFooter,
 } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
-import { Label } from "@/components/ui/label";
-import { Checkbox } from "@/components/ui/checkbox";
-import { Input } from "@/components/ui/input";
+import Experience from "./sections/Experience";
+import { FormData } from "@/types/form";
 
 type Section = {
 	title: string;
@@ -49,38 +47,12 @@ const sections: Section[] = [
 	},
 ];
 
-type FormData = {
-	// Section 1: Technical Background
-	experienceLevel?: string;
-	technologies: string[];
-	otherTechnologies?: string | undefined;
-
-	// Section 2: Interests/Motivation
-	interests: string[];
-	otherInterests?: string;
-	problemType?: string;
-	otherProblemType?: string;
-
-	// Section 3: Purpose
-	purpose?: string;
-	courseInfo?: string; // shown if educational
-	industryInfo?: string; // shown if professional
-
-	// Section 4: Project Scope
-	timeCommitment?: string;
-	projectSize?: string;
-	teamPreference?: string;
-
-	// Section 5: Additional Context
-	specificProblems?: string;
-	constraints?: string;
-};
-
 export default function ProjectForm() {
 	const [currentSection, setCurrentSection] = useState(0);
 	const [formData, setFormData] = useState<FormData>({
 		technologies: [],
 		interests: [],
+		experienceLevel: "beginner",
 	});
 
 	const TECHNOLOGIES = [
@@ -101,132 +73,7 @@ export default function ProjectForm() {
 		switch (sections[currentSection].type) {
 			case "experience":
 				return (
-					<div className="space-y-8">
-						<div>
-							<h3 className="text-lg font-medium">
-								What's your programming experience level?
-							</h3>
-							<RadioGroup
-								className="mt-4 space-y-3"
-								value={formData.experienceLevel}
-								onValueChange={(value) =>
-									setFormData((prev) => ({
-										...prev,
-										experienceLevel: value,
-									}))
-								}
-							>
-								<div className="flex items-center space-x-2">
-									<RadioGroupItem
-										value="beginner"
-										id="beginner"
-									/>
-									<Label htmlFor="beginner">
-										Beginner (Less than 1 year)
-									</Label>
-								</div>
-								<div className="flex items-center space-x-2">
-									<RadioGroupItem
-										value="intermediate"
-										id="intermediate"
-									/>
-									<Label htmlFor="intermediate">
-										Intermediate (1-3 years)
-									</Label>
-								</div>
-								<div className="flex items-center space-x-2">
-									<RadioGroupItem
-										value="advanced"
-										id="advanced"
-									/>
-									<Label htmlFor="advanced">
-										Advanced (3+ years)
-									</Label>
-								</div>
-							</RadioGroup>
-						</div>
-						<div>
-							<h3 className="text-lg font-medium mb-4">
-								Which technologies have you worked with?
-							</h3>
-							<div className="space-y-4">
-								{TECHNOLOGIES.map((tech) => (
-									<div
-										key={tech.id}
-										className="flex items-center space-x-2"
-									>
-										<Checkbox
-											id={tech.id}
-											checked={formData.technologies.includes(
-												tech.id
-											)}
-											onCheckedChange={(checked) => {
-												setFormData((prev) => ({
-													...prev,
-													technologies: checked
-														? [
-																...prev.technologies,
-																tech.id,
-														  ]
-														: prev.technologies.filter(
-																(t) =>
-																	t !==
-																	tech.id
-														  ),
-												}));
-											}}
-										/>
-										<Label htmlFor={tech.id}>
-											{tech.label}
-										</Label>
-									</div>
-								))}
-								<div className="flex items-center space-x-2">
-									<Checkbox
-										id="other-tech"
-										// If otherTechnology exists, checkbox is checked
-										checked={
-											formData.otherTechnologies !==
-											undefined
-										}
-										onCheckedChange={(checked) => {
-											if (
-												formData.otherTechnologies ===
-												undefined
-											) {
-												setFormData({
-													...formData,
-													otherTechnologies: "",
-												});
-											} else {
-												setFormData({
-													...formData,
-													otherTechnologies:
-														undefined,
-												});
-											}
-										}}
-									/>
-									<Label htmlFor="other-tech">Other: </Label>
-									{formData.otherTechnologies !==
-										undefined && (
-										<Input
-											value={formData.otherTechnologies}
-											onChange={(e) =>
-												setFormData({
-													...formData,
-													otherTechnologies:
-														e.target.value,
-												})
-											}
-											className="ml-2 w-48"
-											placeholder="i.e. Python"
-										/>
-									)}
-								</div>
-							</div>
-						</div>
-					</div>
+					<Experience formData={formData} setFormData={setFormData} />
 				);
 			default:
 				return null;

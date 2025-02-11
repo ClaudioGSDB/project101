@@ -118,6 +118,7 @@ export default function ProjectForm() {
 						Back
 					</Button>
 					<Button
+						className="bg-gradient-to-r from-indigo-500 to-blue-500 hover:from-indigo-600 hover:to-blue-600 hover:scale-105 transition-transform duration-300"
 						disabled={currentSection === sections.length - 1}
 						onClick={() => setCurrentSection(currentSection + 1)}
 					>

@@ -9,8 +9,9 @@ import {
 	CardFooter,
 } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import Experience from "./sections/Experience";
 import { FormData } from "@/types/form";
+import Experience from "@/components/form/sections/Experience";
+import Interests from "@/components/form/sections/Interests";
 
 type Section = {
 	title: string;
@@ -26,22 +27,22 @@ const sections: Section[] = [
 		type: "experience",
 	},
 	{
-		title: "technology 2",
+		title: "Technology",
 		description: "asdasdasd",
 		type: "technology",
 	},
 	{
-		title: "purpose 3",
+		title: "Purpose 3",
 		description: "asdasdasd",
 		type: "purpose",
 	},
 	{
-		title: "scope 4",
+		title: "Scope 4",
 		description: "asdasdasd",
 		type: "scope",
 	},
 	{
-		title: "additional 5",
+		title: "Additional 5",
 		description: "asdasdasd",
 		type: "additional",
 	},
@@ -74,6 +75,10 @@ export default function ProjectForm() {
 			case "experience":
 				return (
 					<Experience formData={formData} setFormData={setFormData} />
+				);
+			case "technology":
+				return (
+					<Interests formData={formData} setFormData={setFormData} />
 				);
 			default:
 				return null;

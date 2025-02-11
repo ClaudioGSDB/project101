@@ -4,198 +4,226 @@ import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
 import { FormData } from "@/types/form";
 
-// Types
 type ExperienceProps = {
 	formData: FormData;
 	setFormData: React.Dispatch<React.SetStateAction<FormData>>;
 };
 
-const TECHNOLOGIES = [
-	{ id: "web", label: "Web Development (HTML, CSS, JavaScript)" },
+const EXPERIENCE_LEVELS = [
+	{
+		id: "brand_new",
+		label: "Brand New Explorer",
+		description: "I'm new to programming and excited to start the journey",
+	},
+	{
+		id: "learning_basics",
+		label: "Learning the Ropes",
+		description: "I'm currently learning the fundamentals of programming",
+	},
+	{
+		id: "some_experience",
+		label: "Building Experience",
+		description: "I've built small projects and am comfortable with basics",
+	},
+	{
+		id: "professional",
+		label: "Seasoned Developer",
+		description: "I work professionally building complex applications",
+	},
+];
+
+const PROGRAMMING_LANGUAGES = [
+	{ id: "javascript", label: "JavaScript" },
+	{ id: "python", label: "Python" },
+	{ id: "java", label: "Java" },
+	{ id: "csharp", label: "C#" },
+	{ id: "cpp", label: "C++" },
+	{ id: "ruby", label: "Ruby" },
+	{ id: "php", label: "PHP" },
+	{ id: "swift", label: "Swift" },
+	{ id: "go", label: "Go" },
+	{ id: "rust", label: "Rust" },
+];
+
+const EXPERTISE_AREAS = [
+	{ id: "web", label: "Web Development" },
 	{ id: "mobile", label: "Mobile Development" },
-	{ id: "database", label: "Databases" },
-	{ id: "cloud", label: "Cloud Services" },
-	{ id: "ml", label: "Machine Learning/AI" },
-	{ id: "game", label: "Game Development" },
+	{ id: "data", label: "Data Science" },
 	{ id: "backend", label: "Backend Development" },
+	{ id: "devops", label: "DevOps" },
+	{ id: "game", label: "Game Development" },
+	{ id: "ai", label: "AI/Machine Learning" },
+	{ id: "security", label: "Security" },
+];
+
+const YEARS_OF_EXPERIENCE = [
+	{ id: "less_than_1", label: "Less than 1 year" },
+	{ id: "1_2_years", label: "1-2 years" },
+	{ id: "2_5_years", label: "2-5 years" },
+	{ id: "5_plus_years", label: "5+ years" },
 ];
 
 export default function Experience({ formData, setFormData }: ExperienceProps) {
 	return (
-		<div className="space-y-8">
+		<div className="space-y-12">
+			{/* Experience Level Selection */}
 			<div>
-				<h3 className="text-xl font-semibold text-gray-800 mb-4">
-					What's your programming experience level?
-				</h3>
-				<div className="relative w-full max-w-xl mx-auto">
-					<RadioGroup
-						className="grid grid-cols-3 relative bg-white rounded-full border-2 border-indigo-500 p-1 overflow-hidden"
-						value={formData.experienceLevel}
-						onValueChange={(value) =>
-							setFormData((prev) => ({
-								...prev,
-								experienceLevel: value,
-							}))
-						}
-					>
-						{/* Moving Highlight */}
-						<div
-							className={`absolute transition-all duration-200 h-[calc(100%-8px)] top-1 rounded-full bg-gradient-to-r from-indigo-500 to-blue-500
-                                ${
-									formData.experienceLevel === "beginner"
-										? "left-1 w-[calc(33.33%-4px)]"
-										: ""
-								}
-                                ${
-									formData.experienceLevel === "intermediate"
-										? "left-[33.33%] w-[calc(33.33%-4px)]"
-										: ""
-								}
-                                ${
-									formData.experienceLevel === "advanced"
-										? "left-[66.66%] w-[calc(33.33%-4px)]"
-										: ""
-								}
-                            `}
-						/>
-						{/* Radio Buttons */}
-						<div className="relative">
-							<RadioGroupItem
-								value="beginner"
-								id="beginner"
-								className="sr-only"
-							/>
-							<Label
-								htmlFor="beginner"
-								className={`block text-center py-2 px-4 rounded-full cursor-pointer transition-colors relative z-10 select-none
-                                    ${
-										formData.experienceLevel === "beginner"
-											? "text-white"
-											: "text-gray-600 hover:text-indigo-600"
-									}
-                                `}
-							>
-								Beginner
-							</Label>
-						</div>
-						<div className="relative">
-							<RadioGroupItem
-								value="intermediate"
-								id="intermediate"
-								className="sr-only"
-							/>
-							<Label
-								htmlFor="intermediate"
-								className={`block text-center py-2 px-4 rounded-full cursor-pointer transition-colors relative z-10 select-none
-                                    ${
-										formData.experienceLevel ===
-										"intermediate"
-											? "text-white"
-											: "text-gray-600 hover:text-indigo-600"
-									}
-                                `}
-							>
-								Intermediate
-							</Label>
-						</div>
-						<div className="relative">
-							<RadioGroupItem
-								value="advanced"
-								id="advanced"
-								className="sr-only"
-							/>
-							<Label
-								htmlFor="advanced"
-								className={`block text-center py-2 px-4 rounded-full cursor-pointer transition-colors relative z-10 select-none
-                                    ${
-										formData.experienceLevel === "advanced"
-											? "text-white"
-											: "text-gray-600 hover:text-indigo-600"
-									}
-                                `}
-							>
-								Advanced
-							</Label>
-						</div>
-					</RadioGroup>
-				</div>
-			</div>
-			<div>
-				<h3 className="text-xl font-semibold text-gray-800 mb-4">
-					Which technologies have you worked with?
+				<h3 className="text-xl font-semibold text-gray-800 mb-6">
+					What is your current experience with programming?
 				</h3>
 				<div className="grid grid-cols-2 gap-4">
-					{TECHNOLOGIES.map((tech) => (
+					{EXPERIENCE_LEVELS.map((level) => (
 						<div
-							key={tech.id}
-							className={`p-4 rounded-xl border-2 transition-all duration-200 cursor-pointer select-none
-                                                        ${
-															formData.technologies.includes(
-																tech.id
-															)
-																? "border-indigo-500 bg-indigo-50"
-																: "border-gray-200 hover:border-indigo-200 hover:bg-gray-50"
-														}`}
+							key={level.id}
+							className={`p-6 rounded-xl border-2 transition-all duration-300 cursor-pointer select-none
+                                ${
+									formData.experienceLevel === level.id
+										? "border-indigo-500 bg-gradient-to-br from-indigo-50 to-blue-50 transform scale-[1.02]"
+										: "border-gray-200 hover:border-indigo-200 hover:bg-gray-50"
+								}`}
+							onClick={() =>
+								setFormData((prev) => ({
+									...prev,
+									experienceLevel:
+										level.id as typeof formData.experienceLevel,
+								}))
+							}
+						>
+							<div className="space-y-2">
+								<h4
+									className={`font-semibold transition-colors
+                                    ${
+										formData.experienceLevel === level.id
+											? "text-indigo-700"
+											: "text-gray-700"
+									}`}
+								>
+									{level.label}
+								</h4>
+								<p className="text-sm text-gray-500">
+									{level.description}
+								</p>
+							</div>
+						</div>
+					))}
+				</div>
+			</div>
+
+			{/* Conditional Question for Beginners */}
+			{(formData.experienceLevel === "brand_new" ||
+				formData.experienceLevel === "learning_basics") && (
+				<div className="animate-fadeIn">
+					<h3 className="text-xl font-semibold text-gray-800 mb-4">
+						What areas of technology or programming interest you
+						most?
+					</h3>
+					<div className="bg-white rounded-xl border-2 border-gray-200 p-4">
+						<textarea
+							className="w-full min-h-[100px] resize-none border-none focus:ring-0 text-gray-700 placeholder:text-gray-400"
+							placeholder="Tell us what fascinates you about programming... For example: building websites, creating apps, working with data, etc."
+							value={formData.techInterests || ""}
+							onChange={(e) =>
+								setFormData((prev) => ({
+									...prev,
+									techInterests: e.target.value,
+								}))
+							}
+						/>
+					</div>
+				</div>
+			)}
+
+			{/* Programming Languages for Experienced Users */}
+			{(formData.experienceLevel === "some_experience" ||
+				formData.experienceLevel === "professional") && (
+				<div className="animate-fadeIn">
+					<h3 className="text-xl font-semibold text-gray-800 mb-4">
+						Which programming languages are you comfortable using?
+					</h3>
+					<div className="flex flex-wrap gap-3">
+						{PROGRAMMING_LANGUAGES.map((lang) => (
+							<div
+								key={lang.id}
+								className={`px-4 py-2 rounded-full transition-all duration-200 cursor-pointer select-none
+                                    ${
+										formData.languages.includes(lang.id)
+											? "bg-indigo-500 text-white ring-2 ring-indigo-500"
+											: "bg-white ring-2 ring-gray-200 hover:ring-indigo-200"
+									}`}
+								onClick={() => {
+									setFormData((prev) => ({
+										...prev,
+										languages: prev.languages.includes(
+											lang.id
+										)
+											? prev.languages.filter(
+													(l) => l !== lang.id
+											  )
+											: [...prev.languages, lang.id],
+									}));
+								}}
+							>
+								<span className="font-medium">
+									{lang.label}
+								</span>
+							</div>
+						))}
+					</div>
+				</div>
+			)}
+
+			{/* Expertise Areas */}
+			<div>
+				<h3 className="text-xl font-semibold text-gray-800 mb-4">
+					Which of these best describes your areas of expertise?
+				</h3>
+				<div className="grid grid-cols-2 gap-4">
+					{EXPERTISE_AREAS.map((area) => (
+						<div
+							key={area.id}
+							className={`p-4 rounded-xl border-2 transition-all duration-200 cursor-pointer
+                                ${
+									formData.expertiseAreas.includes(area.id)
+										? "border-indigo-500 bg-indigo-50"
+										: "border-gray-200 hover:border-indigo-200 hover:bg-gray-50"
+								}`}
 							onClick={() => {
 								setFormData((prev) => ({
 									...prev,
-									technologies: prev.technologies.includes(
-										tech.id
-									)
-										? prev.technologies.filter(
-												(t) => t !== tech.id
-										  )
-										: [...prev.technologies, tech.id],
+									expertiseAreas:
+										prev.expertiseAreas.includes(area.id)
+											? prev.expertiseAreas.filter(
+													(a) => a !== area.id
+											  )
+											: [...prev.expertiseAreas, area.id],
 								}));
 							}}
 						>
 							<Label className="font-medium cursor-pointer">
-								{tech.label}
+								{area.label}
 							</Label>
 						</div>
 					))}
+				</div>
+			</div>
 
-					{/* Other option */}
-					<div
-						className={`p-4 h-16 rounded-xl border-2 transition-all duration-200 cursor-pointer
-                                                        ${
-															formData.otherTechnologies !==
-															undefined
-																? "border-indigo-500 bg-indigo-50"
-																: "border-gray-200 hover:border-indigo-200 hover:bg-gray-50"
-														}`}
-						onClick={() => {
-							if (formData.otherTechnologies === undefined) {
-								setFormData({
-									...formData,
-									otherTechnologies: "",
-								});
-							} else {
-								setFormData({
-									...formData,
-									otherTechnologies: undefined,
-								});
-							}
-						}}
-					>
-						<div className="flex items-center h-full">
-							<Label className="font-medium">Other:</Label>
-							{formData.otherTechnologies !== undefined && (
-								<Input
-									value={formData.otherTechnologies}
-									onChange={(e) =>
-										setFormData({
-											...formData,
-											otherTechnologies: e.target.value,
-										})
-									}
-									onClick={(e) => e.stopPropagation()}
-									className="border-0 bg-transparent focus:ring-0 ml-2 pl-2 h-8"
-									placeholder="i.e. Python"
-								/>
-							)}
-						</div>
-					</div>
+			{/* Frameworks/Libraries */}
+			<div>
+				<h3 className="text-xl font-semibold text-gray-800 mb-4">
+					Are you familiar with any specific frameworks or libraries?
+				</h3>
+				<div className="bg-white rounded-xl border-2 border-gray-200 p-4">
+					<textarea
+						className="w-full min-h-[100px] resize-none border-none focus:ring-0 text-gray-700 placeholder:text-gray-400"
+						placeholder="List any frameworks or libraries you're comfortable with... (e.g., React, Django, TensorFlow)"
+						value={formData.frameworksLibraries || ""}
+						onChange={(e) =>
+							setFormData((prev) => ({
+								...prev,
+								frameworksLibraries: e.target.value,
+							}))
+						}
+					/>
 				</div>
 			</div>
 		</div>

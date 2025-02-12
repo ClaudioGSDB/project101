@@ -11,6 +11,10 @@ import {
 import { Button } from "@/components/ui/button";
 import { FormData } from "@/types/form";
 import Experience from "@/components/form/sections/Experience";
+import Goal from "@/components/form/sections/Goal";
+import Interests from "@/components/form/sections/Interests";
+import Practical from "@/components/form/sections/Practical";
+import Additional from "./sections/Additional";
 
 type Section = {
 	title: string;
@@ -56,6 +60,8 @@ export default function ProjectForm() {
 	const [formData, setFormData] = useState<FormData>({
 		languages: [],
 		expertiseAreas: [],
+		techAreas: [],
+		devPreferences: [],
 	});
 
 	useEffect(() => {
@@ -68,7 +74,20 @@ export default function ProjectForm() {
 				return (
 					<Experience formData={formData} setFormData={setFormData} />
 				);
-			// We'll add other sections later
+			case "goals":
+				return <Goal formData={formData} setFormData={setFormData} />;
+			case "interests":
+				return (
+					<Interests formData={formData} setFormData={setFormData} />
+				);
+			case "practical":
+				return (
+					<Practical formData={formData} setFormData={setFormData} />
+				);
+			case "additional":
+				return (
+					<Additional formData={formData} setFormData={setFormData} />
+				);
 			default:
 				return null;
 		}
@@ -76,7 +95,9 @@ export default function ProjectForm() {
 
 	// Rest of your component remains the same
 	return (
-		<div className="min-h-screen flex justify-center items-center bg-gray-50">
+		<div className="relative min-h-screen flex justify-center items-center bg-gray-50 overflow-hidden">
+			{/* Blurred Background */}
+			<div className="absolute inset-0 bg-gradient-to-br from-indigo-500/30 to-blue-500/30 blur-3xl opacity-50"></div>
 			<div className="relative flex">
 				{/* Progress indicator */}
 				<div className="absolute -left-64 top-1/2 -translate-y-1/2 flex flex-col items-center gap-4">
@@ -118,17 +139,19 @@ export default function ProjectForm() {
 				{/* Main form card */}
 				<Card className="w-[768px]">
 					<CardHeader>
-						<CardTitle>{sections[currentSection].title}</CardTitle>
-						<p className="text-gray-500 mt-2">
+						<CardTitle className="px-2">
+							{sections[currentSection].title}
+						</CardTitle>
+						<p className="text-gray-500 mt-2 px-2">
 							{sections[currentSection].description}
 						</p>
 					</CardHeader>
 					<CardContent className="relative">
-						<div className="max-h-[60vh] custom-scrollbar pr-6">
+						<div className="max-h-[60vh] custom-scrollbar px-2">
 							{renderSectionContent()}
 						</div>
 					</CardContent>
-					<CardFooter className="flex justify-between">
+					<CardFooter className="flex justify-between px-9">
 						<Button
 							variant="outline"
 							disabled={currentSection === 0}

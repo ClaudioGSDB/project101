@@ -1,6 +1,6 @@
 // src/types/form.ts
 export type FormData = {
-	// Section 1: Technical Background
+	// Section 1: Background & Experience
 	experienceLevel?:
 		| "brand_new"
 		| "learning_basics"
@@ -11,23 +11,32 @@ export type FormData = {
 	expertiseAreas: string[];
 	frameworksLibraries?: string;
 
-	// // Section 2: Interests/Motivation
-	// interests: string[];
-	// otherInterests?: string;
-	// problemType?: string;
-	// otherProblemType?: string;
+	// Section 2: Project Goals & Motivation
+	primaryGoal?:
+		| "learning"
+		| "portfolio"
+		| "problem_solving"
+		| "fun"
+		| "other";
+	otherGoal?: string; // Used when primaryGoal is 'other'
+	goalDetails?: string; // For the conditional follow-up responses
 
-	// // Section 3: Purpose
-	// purpose?: string;
-	// courseInfo?: string;
-	// industryInfo?: string;
+	// Section 3: Interests & Preferences
+	techAreas: string[];
+	otherTechArea?: string;
+	devPreferences: string[];
+	otherDevPreference?: string;
+	projectIdeas?: string;
 
-	// // Section 4: Project Scope
-	// timeCommitment?: string;
-	// projectSize?: string;
-	// teamPreference?: string;
+	// Section 4: Project Scope
+	timeCommitment?: string;
+	projectTimeline?: string;
+	teamPreference?: string;
+	teamSize?: string;
+	timeConstraints?: string;
 
-	// // Section 5: Additional Context
-	// specificProblems?: string;
-	// constraints?: string;
+	// Section 5: Additional Context
+	challenges?: string;
+	constraints?: string;
+	additionalNotes?: string;
 };

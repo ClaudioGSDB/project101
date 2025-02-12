@@ -1,189 +1,314 @@
-// // src/components/form/sections/Interests.tsx
-// "use client";
-// import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
-// import { Label } from "@/components/ui/label";
-// import { Input } from "@/components/ui/input";
-// import { FormData } from "@/types/form";
+// src/components/Form/sections/Interests.tsx
+"use client";
+import { Label } from "@/components/ui/label";
+import { Input } from "@/components/ui/input";
+import { FormData } from "@/types/form";
 
-// type InterestsProps = {
-// 	formData: FormData;
-// 	setFormData: React.Dispatch<React.SetStateAction<FormData>>;
-// };
+type InterestsProps = {
+	formData: FormData;
+	setFormData: React.Dispatch<React.SetStateAction<FormData>>;
+};
 
-// const INTERESTS = [
-// 	{ id: "ui", label: "Building user interfaces" },
-// 	{ id: "data", label: "Working with data" },
-// 	{ id: "algorithms", label: "Solving algorithms" },
-// 	{ id: "automation", label: "Automation" },
-// 	{ id: "mobile", label: "Mobile apps" },
-// 	{ id: "ai", label: "AI/Machine Learning" },
-// 	{ id: "gaming", label: "Gaming" },
-// 	{ id: "business", label: "Business tools" },
-// ];
+const TECH_AREAS = [
+	{
+		id: "gaming",
+		label: "Gaming & Entertainment",
+		description: "Games, streaming platforms, media apps",
+	},
+	{
+		id: "business",
+		label: "Business & Finance",
+		description: "Fintech, e-commerce, productivity tools",
+	},
+	{
+		id: "social",
+		label: "Social & Communication",
+		description: "Social platforms, messaging, communities",
+	},
+	{
+		id: "education",
+		label: "Education & Learning",
+		description: "Teaching tools, learning platforms",
+	},
+	{
+		id: "health",
+		label: "Health & Wellness",
+		description: "Fitness tracking, medical apps, wellness",
+	},
+];
 
-// const PROBLEM_TYPES = [
-// 	{ id: "technical", label: "Technical challenges" },
-// 	{ id: "ux", label: "User experience problems" },
-// 	{ id: "business", label: "Business/efficiency problems" },
-// 	{ id: "creative", label: "Creative/design problems" },
-// 	{ id: "data", label: "Data analysis problems" },
-// ];
+const DEV_PREFERENCES = [
+	{
+		id: "frontend",
+		label: "Frontend Development",
+		description: "Building beautiful user interfaces and experiences",
+	},
+	{
+		id: "backend",
+		label: "Backend Development",
+		description: "Server-side logic, APIs, and databases",
+	},
+	{
+		id: "fullstack",
+		label: "Full-Stack Development",
+		description: "End-to-end application development",
+	},
+	{
+		id: "mobile",
+		label: "Mobile Development",
+		description: "iOS, Android, and cross-platform apps",
+	},
+	{
+		id: "data",
+		label: "Data & Analytics",
+		description: "Data processing, visualization, and analysis",
+	},
+];
 
-// export default function Interests({ formData, setFormData }: InterestsProps) {
-// 	return (
-// 		<div className="space-y-8">
-// 			{/* Areas of Interest */}
-// 			<div>
-// 				<h3 className="text-xl font-semibold text-gray-800 mb-4">
-// 					What areas of technology interest you most?
-// 				</h3>
-// 				<div className="grid grid-cols-2 gap-4">
-// 					{INTERESTS.map((interest) => (
-// 						<div
-// 							key={interest.id}
-// 							className={`p-4 rounded-xl border-2 transition-all duration-200 cursor-pointer select-none
-//                                 ${
-// 									formData.interests.includes(interest.id)
-// 										? "border-indigo-500 bg-indigo-50"
-// 										: "border-gray-200 hover:border-indigo-200 hover:bg-gray-50"
-// 								}`}
-// 							onClick={() => {
-// 								setFormData((prev) => ({
-// 									...prev,
-// 									interests: prev.interests.includes(
-// 										interest.id
-// 									)
-// 										? prev.interests.filter(
-// 												(t) => t !== interest.id
-// 										  )
-// 										: [...prev.interests, interest.id],
-// 								}));
-// 							}}
-// 						>
-// 							<Label className="font-medium cursor-pointer">
-// 								{interest.label}
-// 							</Label>
-// 						</div>
-// 					))}
+export default function Interests({ formData, setFormData }: InterestsProps) {
+	return (
+		<div className="space-y-12">
+			{/* Areas of Interest */}
+			<div>
+				<h3 className="text-xl font-semibold text-gray-800 mb-6">
+					What areas of technology interest you most?
+				</h3>
+				<div className="grid grid-cols-2 gap-4">
+					{TECH_AREAS.map((area) => (
+						<div
+							key={area.id}
+							className={`p-6 rounded-xl border-2 transition-all duration-200 cursor-pointer select-none
+                                ${
+									formData.techAreas?.includes(area.id)
+										? "border-indigo-500 bg-gradient-to-br from-indigo-50 to-blue-50"
+										: "border-gray-200 hover:border-indigo-200 hover:bg-gray-50"
+								}`}
+							onClick={() => {
+								setFormData((prev) => ({
+									...prev,
+									techAreas: prev.techAreas?.includes(area.id)
+										? prev.techAreas.filter(
+												(a) => a !== area.id
+										  )
+										: [...(prev.techAreas || []), area.id],
+									otherTechArea: prev.techAreas?.includes(
+										"other"
+									)
+										? prev.otherTechArea
+										: undefined,
+								}));
+							}}
+						>
+							<div className="space-y-2">
+								<h4
+									className={`font-semibold transition-colors
+                                    ${
+										formData.techAreas?.includes(area.id)
+											? "text-indigo-700"
+											: "text-gray-700"
+									}`}
+								>
+									{area.label}
+								</h4>
+								<p className="text-sm text-gray-500">
+									{area.description}
+								</p>
+							</div>
+						</div>
+					))}
 
-// 					{/* Other Interest option */}
-// 					<div
-// 						className={`p-4 h-16 rounded-xl border-2 transition-all duration-200 cursor-pointer
-//                             ${
-// 								formData.otherInterests !== undefined
-// 									? "border-indigo-500 bg-indigo-50"
-// 									: "border-gray-200 hover:border-indigo-200 hover:bg-gray-50"
-// 							}`}
-// 						onClick={() => {
-// 							if (formData.otherInterests === undefined) {
-// 								setFormData({
-// 									...formData,
-// 									otherInterests: "",
-// 								});
-// 							} else {
-// 								setFormData({
-// 									...formData,
-// 									otherInterests: undefined,
-// 								});
-// 							}
-// 						}}
-// 					>
-// 						<div className="flex items-center h-full">
-// 							<Label className="font-medium">Other:</Label>
-// 							{formData.otherInterests !== undefined && (
-// 								<Input
-// 									value={formData.otherInterests}
-// 									onChange={(e) =>
-// 										setFormData({
-// 											...formData,
-// 											otherInterests: e.target.value,
-// 										})
-// 									}
-// 									onClick={(e) => e.stopPropagation()}
-// 									className="border-0 bg-transparent focus:ring-0 ml-2 pl-2 h-8"
-// 									placeholder="i.e. Blockchain"
-// 								/>
-// 							)}
-// 						</div>
-// 					</div>
-// 				</div>
-// 			</div>
+					{/* Other option */}
+					<div
+						className={`p-6 rounded-xl border-2 transition-all duration-200 cursor-pointer h-full
+                            ${
+								formData.otherTechArea !== undefined
+									? "border-indigo-500 bg-gradient-to-br from-indigo-50 to-blue-50"
+									: "border-gray-200 hover:border-indigo-200 hover:bg-gray-50"
+							}`}
+						onClick={() => {
+							setFormData((prev) => ({
+								...prev,
+								otherTechArea:
+									prev.otherTechArea === undefined
+										? ""
+										: undefined,
+								techAreas:
+									prev.otherTechArea === undefined
+										? [...(prev.techAreas || []), "other"]
+										: prev.techAreas?.filter(
+												(a) => a !== "other"
+										  ) || [],
+							}));
+						}}
+					>
+						<div className="space-y-2">
+							<h4
+								className={`font-semibold transition-colors
+                                ${
+									formData.otherTechArea !== undefined
+										? "text-indigo-700"
+										: "text-gray-700"
+								}`}
+							>
+								Other Areas
+							</h4>
+							{formData.otherTechArea !== undefined ? (
+								<Input
+									value={formData.otherTechArea}
+									onChange={(e) =>
+										setFormData((prev) => ({
+											...prev,
+											otherTechArea: e.target.value,
+										}))
+									}
+									onClick={(e) => e.stopPropagation()}
+									className="mt-2 border-0 bg-transparent focus:ring-0 p-0"
+									placeholder="Tell us what interests you..."
+								/>
+							) : (
+								<p className="text-sm text-gray-500">
+									Other areas not listed above
+								</p>
+							)}
+						</div>
+					</div>
+				</div>
+			</div>
 
-// 			{/* Problem Types */}
-// 			<div>
-// 				<h3 className="text-xl font-semibold text-gray-800 mb-4">
-// 					What type of problems do you enjoy solving?
-// 				</h3>
-// 				<div className="flex flex-wrap gap-3">
-// 					{PROBLEM_TYPES.map((type) => (
-// 						<div
-// 							key={type.id}
-// 							className={`px-6 py-3 rounded-full transition-all duration-200 cursor-pointer select-none
-//                     ${
-// 						formData.problemType === type.id
-// 							? "bg-indigo-500 text-white ring-2 ring-indigo-500"
-// 							: "bg-white ring-2 ring-gray-200 hover:ring-indigo-200"
-// 					}`}
-// 							onClick={() => {
-// 								setFormData((prev) => ({
-// 									...prev,
-// 									problemType: type.id,
-// 									otherProblemType: undefined,
-// 								}));
-// 							}}
-// 						>
-// 							<Label className="font-medium cursor-pointer">
-// 								{type.label}
-// 							</Label>
-// 						</div>
-// 					))}
+			{/* Development Preferences */}
+			<div>
+				<h3 className="text-xl font-semibold text-gray-800 mb-6">
+					What kind of development work do you find most engaging?
+				</h3>
+				<div className="grid grid-cols-2 gap-4">
+					{DEV_PREFERENCES.map((pref) => (
+						<div
+							key={pref.id}
+							className={`p-6 rounded-xl border-2 transition-all duration-200 cursor-pointer select-none
+                                ${
+									formData.devPreferences?.includes(pref.id)
+										? "border-indigo-500 bg-gradient-to-br from-indigo-50 to-blue-50"
+										: "border-gray-200 hover:border-indigo-200 hover:bg-gray-50"
+								}`}
+							onClick={() => {
+								setFormData((prev) => ({
+									...prev,
+									devPreferences:
+										prev.devPreferences?.includes(pref.id)
+											? prev.devPreferences.filter(
+													(p) => p !== pref.id
+											  )
+											: [
+													...(prev.devPreferences ||
+														[]),
+													pref.id,
+											  ],
+								}));
+							}}
+						>
+							<div className="space-y-2">
+								<h4
+									className={`font-semibold transition-colors
+                                    ${
+										formData.devPreferences?.includes(
+											pref.id
+										)
+											? "text-indigo-700"
+											: "text-gray-700"
+									}`}
+								>
+									{pref.label}
+								</h4>
+								<p className="text-sm text-gray-500">
+									{pref.description}
+								</p>
+							</div>
+						</div>
+					))}
 
-// 					<div
-// 						className={`px-6 h-12 rounded-full transition-all duration-200 cursor-pointer select-none flex items-center w-64
-// 							${
-// 								formData.otherProblemType !== undefined
-// 									? "bg-indigo-500 text-white ring-2 ring-indigo-500"
-// 									: "bg-white ring-2 ring-gray-200 hover:ring-indigo-200"
-// 							}`}
-// 						onClick={() => {
-// 							if (formData.otherProblemType === undefined) {
-// 								setFormData({
-// 									...formData,
-// 									otherProblemType: "",
-// 									problemType: undefined,
-// 								});
-// 							} else {
-// 								setFormData({
-// 									...formData,
-// 									otherProblemType: undefined,
-// 								});
-// 							}
-// 						}}
-// 					>
-// 						<Label className="font-medium cursor-pointer whitespace-nowrap">
-// 							Other:
-// 						</Label>
-// 						<Input
-// 							value={formData.otherProblemType || ""}
-// 							onChange={(e) =>
-// 								setFormData({
-// 									...formData,
-// 									otherProblemType: e.target.value,
-// 								})
-// 							}
-// 							onClick={(e) => e.stopPropagation()}
-// 							className={`border-0 bg-transparent focus:ring-0 ml-2 flex-1 h-8
-// 								${
-// 									formData.otherProblemType !== undefined
-// 										? "text-white placeholder:text-white/70"
-// 										: "text-gray-500 pointer-events-none"
-// 								}`}
-// 							placeholder="i.e. System Design"
-// 							disabled={formData.otherProblemType === undefined}
-// 						/>
-// 					</div>
-// 				</div>
-// 			</div>
-// 		</div>
-// 	);
-// }
+					{/* Other option */}
+					<div
+						className={`p-6 rounded-xl border-2 transition-all duration-200 cursor-pointer h-full
+                            ${
+								formData.otherDevPreference !== undefined
+									? "border-indigo-500 bg-gradient-to-br from-indigo-50 to-blue-50"
+									: "border-gray-200 hover:border-indigo-200 hover:bg-gray-50"
+							}`}
+						onClick={() => {
+							setFormData((prev) => ({
+								...prev,
+								otherDevPreference:
+									prev.otherDevPreference === undefined
+										? ""
+										: undefined,
+								devPreferences:
+									prev.otherDevPreference === undefined
+										? [
+												...(prev.devPreferences || []),
+												"other",
+										  ]
+										: prev.devPreferences?.filter(
+												(p) => p !== "other"
+										  ) || [],
+							}));
+						}}
+					>
+						<div className="space-y-2">
+							<h4
+								className={`font-semibold transition-colors
+                                ${
+									formData.otherDevPreference !== undefined
+										? "text-indigo-700"
+										: "text-gray-700"
+								}`}
+							>
+								Other Focus
+							</h4>
+							{formData.otherDevPreference !== undefined ? (
+								<Input
+									value={formData.otherDevPreference}
+									onChange={(e) =>
+										setFormData((prev) => ({
+											...prev,
+											otherDevPreference: e.target.value,
+										}))
+									}
+									onClick={(e) => e.stopPropagation()}
+									className="mt-2 border-0 bg-transparent focus:ring-0 p-0"
+									placeholder="Tell us what you prefer..."
+								/>
+							) : (
+								<p className="text-sm text-gray-500">
+									Other development focus not listed
+								</p>
+							)}
+						</div>
+					</div>
+				</div>
+			</div>
+
+			{/* Optional Project Ideas */}
+			<div>
+				<h3 className="text-xl font-semibold text-gray-800 mb-4">
+					Do you have any specific project ideas in mind?{" "}
+					<span className="text-sm font-normal text-gray-500">
+						(Optional)
+					</span>
+				</h3>
+				<div className="bg-white rounded-xl border-2 border-gray-200 p-4">
+					<textarea
+						className="w-full min-h-[100px] resize-none border-none focus:ring-0 text-gray-700 placeholder:text-gray-400"
+						placeholder="Share any project ideas you're thinking about..."
+						value={formData.projectIdeas || ""}
+						onChange={(e) =>
+							setFormData((prev) => ({
+								...prev,
+								projectIdeas: e.target.value,
+							}))
+						}
+					/>
+				</div>
+			</div>
+		</div>
+	);
+}

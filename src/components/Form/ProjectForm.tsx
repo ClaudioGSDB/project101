@@ -106,9 +106,9 @@ export default function ProjectForm() {
                 })
             });
 
-			console.log(response);
             const data = await response.json();
-            console.log("Gpt Response: " + data);
+
+            console.log("Gpt Response: ", JSON.stringify(data, null, 4));
 
         } catch (error){
             console.error(error);

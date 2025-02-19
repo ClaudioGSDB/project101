@@ -1,4 +1,4 @@
-// Path: src/components/Form/ProjectForm.tsx
+// Path: src/components/form/ProjectForm.tsx
 "use client";
 import React, { useEffect, useState } from "react";
 import {

@@ -9,7 +9,7 @@ import {
 	CardFooter,
 } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { FormData } from "@/types/form";
+import { FormData, initialFormData } from "@/types/form";
 import Experience from "@/components/form/sections/Experience";
 import Goal from "@/components/form/sections/Goal";
 import Interests from "@/components/form/sections/Interests";
@@ -57,12 +57,7 @@ const sections: Section[] = [
 
 export default function ProjectForm() {
 	const [currentSection, setCurrentSection] = useState(0);
-	const [formData, setFormData] = useState<FormData>({
-		languages: [],
-		expertiseAreas: [],
-		techAreas: [],
-		devPreferences: [],
-	});
+	const [formData, setFormData] = useState<FormData>(initialFormData);
 
 	useEffect(() => {
 		console.log(formData);

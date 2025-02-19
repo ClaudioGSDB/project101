@@ -93,6 +93,28 @@ export default function ProjectForm() {
 		}
 	};
 
+	async function sendPrompt(){
+        try {
+
+            const response = await fetch('/api/gemini', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({
+                    'formData': formData
+                })
+            });
+
+			console.log(response);
+            const data = await response.json();
+            console.log("Gpt Response: " + data);
+
+        } catch (error){
+            console.error(error);
+        }
+    }
+
 	// Rest of your component remains the same
 	return (
 		<div className="relative min-h-screen flex justify-center items-center bg-gray-50 overflow-hidden">
@@ -161,15 +183,27 @@ export default function ProjectForm() {
 						>
 							Back
 						</Button>
-						<Button
-							className="bg-gradient-to-r from-indigo-500 to-blue-500 hover:from-indigo-600 hover:to-blue-600 hover:scale-105 transition-transform duration-300"
-							disabled={currentSection === sections.length - 1}
-							onClick={() =>
-								setCurrentSection(currentSection + 1)
-							}
-						>
-							Next
-						</Button>
+						{
+							currentSection !== sections.length - 1 ? 
+								<Button
+									className="bg-gradient-to-r from-indigo-500 to-blue-500 hover:from-indigo-600 hover:to-blue-600 hover:scale-105 transition-transform duration-300"
+									onClick={() =>
+										setCurrentSection(currentSection + 1)
+									}
+								>
+									Next
+								</Button>
+							:
+								<Button
+								className="bg-gradient-to-r from-indigo-500 to-blue-500 hover:from-indigo-600 hover:to-blue-600 hover:scale-105 transition-transform duration-300"
+								onClick={() =>
+									sendPrompt()
+								}
+								>
+									Submit
+								</Button>
+						}
+						
 					</CardFooter>
 				</Card>
 			</div>

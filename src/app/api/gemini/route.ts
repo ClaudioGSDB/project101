@@ -4,9 +4,9 @@ import { chat } from '@/lib/gemini/config';
 export async function POST(req: Request) {
   try{
     const body = await req.json();
-    const prompt = body.prompt;
+    const formData = body.formData;
     
-    const result = await chat.sendMessage(prompt);
+    const result = await chat.sendMessage(formData);
 
     console.log(chat._history);
 

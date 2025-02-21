@@ -1,8 +1,8 @@
-// src/components/Form/sections/Interests.tsx
 "use client";
 import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
 import { FormData } from "@/types/form";
+import { useRef } from "react";
 
 type InterestsProps = {
 	formData: FormData;
@@ -66,6 +66,8 @@ const DEV_PREFERENCES = [
 ];
 
 export default function Interests({ formData, setFormData }: InterestsProps) {
+	const otherTecInputRef = useRef<HTMLInputElement>(null);
+	const otherDevInputRef = useRef<HTMLInputElement>(null);
 	return (
 		<div className="space-y-12">
 			{/* Areas of Interest */}
@@ -79,23 +81,18 @@ export default function Interests({ formData, setFormData }: InterestsProps) {
 							key={area.id}
 							className={`p-6 rounded-xl border-2 transition-all duration-200 cursor-pointer select-none
                                 ${
-									formData.techAreas?.includes(area.id)
+									formData.techAreas.includes(area.id)
 										? "border-indigo-500 bg-gradient-to-br from-indigo-50 to-blue-50"
 										: "border-gray-200 hover:border-indigo-200 hover:bg-gray-50"
 								}`}
 							onClick={() => {
 								setFormData((prev) => ({
 									...prev,
-									techAreas: prev.techAreas?.includes(area.id)
+									techAreas: prev.techAreas.includes(area.id)
 										? prev.techAreas.filter(
 												(a) => a !== area.id
 										  )
-										: [...(prev.techAreas || []), area.id],
-									otherTechArea: prev.techAreas?.includes(
-										"other"
-									)
-										? prev.otherTechArea
-										: undefined,
+										: [...prev.techAreas, area.id],
 								}));
 							}}
 						>
@@ -103,7 +100,7 @@ export default function Interests({ formData, setFormData }: InterestsProps) {
 								<h4
 									className={`font-semibold transition-colors
                                     ${
-										formData.techAreas?.includes(area.id)
+										formData.techAreas.includes(area.id)
 											? "text-indigo-700"
 											: "text-gray-700"
 									}`}
@@ -121,7 +118,7 @@ export default function Interests({ formData, setFormData }: InterestsProps) {
 					<div
 						className={`p-6 rounded-xl border-2 transition-all duration-200 cursor-pointer h-full
                             ${
-								formData.otherTechArea !== undefined
+								formData.otherTechArea !== ""
 									? "border-indigo-500 bg-gradient-to-br from-indigo-50 to-blue-50"
 									: "border-gray-200 hover:border-indigo-200 hover:bg-gray-50"
 							}`}
@@ -129,31 +126,35 @@ export default function Interests({ formData, setFormData }: InterestsProps) {
 							setFormData((prev) => ({
 								...prev,
 								otherTechArea:
-									prev.otherTechArea === undefined
-										? ""
-										: undefined,
+									prev.otherTechArea === "" ? " " : "",
 								techAreas:
-									prev.otherTechArea === undefined
-										? [...(prev.techAreas || []), "other"]
-										: prev.techAreas?.filter(
+									prev.otherTechArea === ""
+										? [...prev.techAreas, "other"]
+										: prev.techAreas.filter(
 												(a) => a !== "other"
-										  ) || [],
+										  ),
 							}));
+							if (formData.otherTechArea === "") {
+								setTimeout(() => {
+									otherTecInputRef.current?.focus();
+								}, 0);
+							}
 						}}
 					>
 						<div className="space-y-2">
 							<h4
 								className={`font-semibold transition-colors
                                 ${
-									formData.otherTechArea !== undefined
+									formData.otherTechArea !== ""
 										? "text-indigo-700"
 										: "text-gray-700"
 								}`}
 							>
 								Other Areas
 							</h4>
-							{formData.otherTechArea !== undefined ? (
+							{formData.otherTechArea !== "" ? (
 								<Input
+									ref={otherTecInputRef}
 									value={formData.otherTechArea}
 									onChange={(e) =>
 										setFormData((prev) => ({
@@ -186,7 +187,7 @@ export default function Interests({ formData, setFormData }: InterestsProps) {
 							key={pref.id}
 							className={`p-6 rounded-xl border-2 transition-all duration-200 cursor-pointer select-none
                                 ${
-									formData.devPreferences?.includes(pref.id)
+									formData.devPreferences.includes(pref.id)
 										? "border-indigo-500 bg-gradient-to-br from-indigo-50 to-blue-50"
 										: "border-gray-200 hover:border-indigo-200 hover:bg-gray-50"
 								}`}
@@ -194,23 +195,22 @@ export default function Interests({ formData, setFormData }: InterestsProps) {
 								setFormData((prev) => ({
 									...prev,
 									devPreferences:
-										prev.devPreferences?.includes(pref.id)
+										prev.devPreferences.includes(pref.id)
 											? prev.devPreferences.filter(
 													(p) => p !== pref.id
 											  )
-											: [
-													...(prev.devPreferences ||
-														[]),
-													pref.id,
-											  ],
+											: [...prev.devPreferences, pref.id],
 								}));
+								setTimeout(() => {
+									otherDevInputRef.current?.focus(); // Focus after React updates DOM
+								}, 0);
 							}}
 						>
 							<div className="space-y-2">
 								<h4
 									className={`font-semibold transition-colors
                                     ${
-										formData.devPreferences?.includes(
+										formData.devPreferences.includes(
 											pref.id
 										)
 											? "text-indigo-700"
@@ -230,7 +230,7 @@ export default function Interests({ formData, setFormData }: InterestsProps) {
 					<div
 						className={`p-6 rounded-xl border-2 transition-all duration-200 cursor-pointer h-full
                             ${
-								formData.otherDevPreference !== undefined
+								formData.otherDevPreference !== ""
 									? "border-indigo-500 bg-gradient-to-br from-indigo-50 to-blue-50"
 									: "border-gray-200 hover:border-indigo-200 hover:bg-gray-50"
 							}`}
@@ -238,18 +238,13 @@ export default function Interests({ formData, setFormData }: InterestsProps) {
 							setFormData((prev) => ({
 								...prev,
 								otherDevPreference:
-									prev.otherDevPreference === undefined
-										? ""
-										: undefined,
+									prev.otherDevPreference === "" ? " " : "",
 								devPreferences:
-									prev.otherDevPreference === undefined
-										? [
-												...(prev.devPreferences || []),
-												"other",
-										  ]
-										: prev.devPreferences?.filter(
+									prev.otherDevPreference === ""
+										? [...prev.devPreferences, "other"]
+										: prev.devPreferences.filter(
 												(p) => p !== "other"
-										  ) || [],
+										  ),
 							}));
 						}}
 					>
@@ -257,15 +252,16 @@ export default function Interests({ formData, setFormData }: InterestsProps) {
 							<h4
 								className={`font-semibold transition-colors
                                 ${
-									formData.otherDevPreference !== undefined
+									formData.otherDevPreference !== ""
 										? "text-indigo-700"
 										: "text-gray-700"
 								}`}
 							>
 								Other Focus
 							</h4>
-							{formData.otherDevPreference !== undefined ? (
+							{formData.otherDevPreference !== "" ? (
 								<Input
+									ref={otherDevInputRef}
 									value={formData.otherDevPreference}
 									onChange={(e) =>
 										setFormData((prev) => ({
@@ -299,7 +295,7 @@ export default function Interests({ formData, setFormData }: InterestsProps) {
 					<textarea
 						className="w-full min-h-[100px] resize-none border-none focus:ring-0 text-gray-700 placeholder:text-gray-400"
 						placeholder="Share any project ideas you're thinking about..."
-						value={formData.projectIdeas || ""}
+						value={formData.projectIdeas}
 						onChange={(e) =>
 							setFormData((prev) => ({
 								...prev,

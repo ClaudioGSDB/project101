@@ -8,6 +8,7 @@ import {
 	Sparkles,
 	X,
 } from "lucide-react";
+import { Feature } from "./tabs/feature/Feature";
 
 export function DashboardLayout() {
 	const [sidebarExpanded, setSidebarExpanded] = useState(true);
@@ -161,6 +162,7 @@ export function DashboardLayout() {
 				<main className="flex-1 overflow-hidden p-4">
 					<div className="h-full rounded-xl bg-white border shadow-sm overflow-hidden">
 						{/* Tab content will go here */}
+						{activeTab === "features" && <Feature />}
 					</div>
 				</main>
 			</div>

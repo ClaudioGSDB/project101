@@ -174,9 +174,7 @@ export default function Practical({ formData, setFormData }: PracticalProps) {
 									...prev,
 									teamPreference: pref.id,
 									teamSize:
-										pref.id === "solo"
-											? undefined
-											: prev.teamSize,
+										pref.id === "solo" ? "" : prev.teamSize,
 								}))
 							}
 						>
@@ -256,7 +254,7 @@ export default function Practical({ formData, setFormData }: PracticalProps) {
 					<textarea
 						className="w-full min-h-[100px] resize-none border-none focus:ring-0 text-gray-700 placeholder:text-gray-400"
 						placeholder="Share any specific deadlines or time constraints..."
-						value={formData.timeConstraints || ""}
+						value={formData.timeConstraints}
 						onChange={(e) =>
 							setFormData((prev) => ({
 								...prev,

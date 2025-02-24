@@ -9,6 +9,7 @@ interface FeatureCardProps {
 	y: number;
 	content: string;
 	currentScale: number;
+	isBeingDragged?: boolean;
 }
 
 export function FeatureCard({
@@ -17,27 +18,27 @@ export function FeatureCard({
 	y,
 	content,
 	currentScale,
+	isBeingDragged = false,
 }: FeatureCardProps) {
 	const { attributes, listeners, setNodeRef, transform } = useDraggable({
 		id: id,
 	});
 
-	const style = transform
-		? {
-				transform: `translate3d(${transform.x / currentScale}px, ${
-					transform.y / currentScale
-				}px, 0)`,
-		  }
-		: undefined;
+	const style = {
+		left: x,
+		top: y,
+		transition: isBeingDragged ? "none" : "transform 0.2s ease",
+		zIndex: isBeingDragged ? 10 : 1,
+	};
 
 	return (
 		<Card
 			ref={setNodeRef}
 			id={id}
-			className="absolute p-4 w-64 cursor-move bg-white shadow-lg hover:shadow-xl transition-shadow"
-			style={{ ...style, top: y, left: x }}
-			{...attributes}
+			className="absolute p-4 w-64 cursor-move bg-white shadow-lg hover:shadow-xl"
+			style={style}
 			{...listeners}
+			{...attributes}
 		>
 			<div className="font-medium">{content}</div>
 		</Card>

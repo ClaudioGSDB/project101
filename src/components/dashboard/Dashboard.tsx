@@ -1,3 +1,4 @@
+// src/components/dashboard/Dashboard.tsx (Updated)
 "use client";
 import React, { useState } from "react";
 import {
@@ -7,13 +8,26 @@ import {
 	Clock,
 	Sparkles,
 	X,
+	Layers, // New icon for Features
+	Server, // New icon for Stack
+	Route, // New icon for Roadmap
+	FileText, // New icon for Summary
 } from "lucide-react";
 import { Feature } from "./tabs/feature/Feature";
+import { Stack } from "@/components/dashboard/tabs/stack/Stack"; // Import the new Stack component
 
 export function DashboardLayout() {
 	const [sidebarExpanded, setSidebarExpanded] = useState(true);
 	const [activeTab, setActiveTab] = useState("features");
 	const [assistantExpanded, setAssistantExpanded] = useState(false);
+
+	// Define tab icons and labels for more organized code
+	const tabs = [
+		{ id: "features", label: "Features", icon: Layers },
+		{ id: "stack", label: "Stack", icon: Server },
+		{ id: "roadmap", label: "Roadmap", icon: Route },
+		{ id: "summary", label: "Summary", icon: FileText },
+	];
 
 	return (
 		<div className="h-screen w-full bg-gradient-to-br from-gray-50 to-gray-100 flex">
@@ -54,33 +68,39 @@ export function DashboardLayout() {
 					</div>
 				</div>
 
-				{/* Tab Navigation */}
+				{/* Tab Navigation - Enhanced with icons */}
 				<nav className="flex-1 p-2 space-y-1">
-					{["features", "stack", "roadmap", "summary"].map((tab) => (
-						<button
-							key={tab}
-							onClick={() => setActiveTab(tab)}
-							className={`w-full rounded-lg transition-all duration-300 relative group
-                ${
-					activeTab === tab
-						? "bg-gradient-to-r from-indigo-500/10 to-blue-500/10 text-indigo-700"
-						: "hover:bg-gray-50 text-gray-600"
-				}
-                ${
-					sidebarExpanded
-						? "px-4 py-3 text-left"
-						: "p-3 flex justify-center"
-				}`}
-						>
-							<span
-								className={`capitalize ${
-									!sidebarExpanded && "rotate-90"
-								} transition-transform duration-300`}
+					{tabs.map((tab) => {
+						const TabIcon = tab.icon;
+						return (
+							<button
+								key={tab.id}
+								onClick={() => setActiveTab(tab.id)}
+								className={`w-full rounded-lg transition-all duration-300 relative group
+                  ${
+						activeTab === tab.id
+							? "bg-gradient-to-r from-indigo-500/10 to-blue-500/10 text-indigo-700"
+							: "hover:bg-gray-50 text-gray-600"
+					}
+                  ${
+						sidebarExpanded
+							? "px-4 py-3 text-left flex items-center"
+							: "p-3 flex justify-center"
+					}`}
 							>
-								{sidebarExpanded ? tab : tab[0].toUpperCase()}
-							</span>
-						</button>
-					))}
+								<TabIcon
+									className={`w-4 h-4 ${
+										!sidebarExpanded ? "mx-auto" : "mr-2"
+									}`}
+								/>
+								{sidebarExpanded && (
+									<span className="capitalize">
+										{tab.label}
+									</span>
+								)}
+							</button>
+						);
+					})}
 				</nav>
 
 				{/* Version History Button */}
@@ -161,8 +181,23 @@ export function DashboardLayout() {
 				{/* Main Content */}
 				<main className="flex-1 overflow-hidden p-4">
 					<div className="h-full rounded-xl bg-white border shadow-sm overflow-hidden">
-						{/* Tab content will go here */}
+						{/* Render appropriate tab content based on activeTab state */}
 						{activeTab === "features" && <Feature />}
+						{activeTab === "stack" && <Stack />}
+						{activeTab === "roadmap" && (
+							<div className="flex items-center justify-center h-full">
+								<p className="text-gray-500">
+									Roadmap tab content coming soon!
+								</p>
+							</div>
+						)}
+						{activeTab === "summary" && (
+							<div className="flex items-center justify-center h-full">
+								<p className="text-gray-500">
+									Summary tab content coming soon!
+								</p>
+							</div>
+						)}
 					</div>
 				</main>
 			</div>

@@ -13,14 +13,14 @@ export default function DashboardPage() {
 
 	useEffect(() => {
 		if (!loading && !user) {
-			router.push("/login");
+			router.push("/home");
 		}
 	}, [user, loading, router]);
 
 	const handleSignOut = async () => {
 		try {
 			await signOut(auth);
-			router.push("/login");
+			router.push("/home");
 		} catch (error) {
 			console.error("Error signing out:", error);
 		}

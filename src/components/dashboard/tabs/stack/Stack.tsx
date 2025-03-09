@@ -7,57 +7,26 @@ import {
 	Info,
 	LayoutGrid,
 	LayoutList,
-	ChevronDown,
-	ChevronRight,
 	Book,
-	Plus,
-	Minus,
+	CheckCircle,
+	Layers,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import StackVisual from "./StackVisual";
 import { stackData } from "./sample";
+import { motion, AnimatePresence } from "framer-motion";
 
 export function Stack() {
-	const [hoveredTech, setHoveredTech] = useState<string | null>(null);
-	const [expandedCategories, setExpandedCategories] = useState<string[]>([]);
 	const [viewMode, setViewMode] = useState<"list" | "visual">("list");
+	const [activeCategory, setActiveCategory] = useState(stackData.categories[0].id);
+	const [activeTech, setActiveTech] = useState<string | null>(null);
 
-	// Check if a category is expanded
-	const isCategoryExpanded = (categoryId: string) => {
-		return expandedCategories.includes(categoryId);
-	};
+	// Get current category
+	const currentCategory = stackData.categories.find((cat) => cat.id === activeCategory);
 
-	// Toggle a single category
-	const toggleCategory = (categoryId: string) => {
-		if (isCategoryExpanded(categoryId)) {
-			setExpandedCategories(
-				expandedCategories.filter((id) => id !== categoryId)
-			);
-		} else {
-			setExpandedCategories([...expandedCategories, categoryId]);
-		}
-	};
-
-	// Expand all categories
-	const expandAllCategories = () => {
-		setExpandedCategories(stackData.categories.map((cat) => cat.id));
-	};
-
-	// Collapse all categories
-	const collapseAllCategories = () => {
-		setExpandedCategories([]);
-	};
-
-	// Calculate if all categories are expanded
-	const areAllCategoriesExpanded =
-		stackData.categories.length > 0 &&
-		stackData.categories.every((cat) =>
-			expandedCategories.includes(cat.id)
-		);
-
-	// Helper function to get color class variations for contrast
+	// Get color classes for the current category
 	const getCategoryColorClasses = (colorClass: string) => {
-		// Extract the base color and intensity from the Tailwind class
+		// Extract the base color from the Tailwind class
 		const matches = colorClass.match(/from-([a-z]+)-(\d+)/);
 		if (!matches)
 			return {
@@ -65,29 +34,34 @@ export function Stack() {
 				bgColor: colorClass,
 				hoverBgColor: "hover:bg-gray-100",
 				lightBgColor: "bg-gray-50",
+				borderColor: "border-gray-200",
 			};
 
 		const [_, colorName, intensity] = matches;
 		const intensityNum = parseInt(intensity);
 
-		// Determine text color based on background intensity
-		// Darker backgrounds (500+) get white text, lighter get dark text
+		// Determine color variations
 		const textColor = intensityNum >= 500 ? "text-white" : "text-gray-900";
+		const borderColor = `border-${colorName}-${Math.max(intensityNum - 200, 200)}`;
+		const lightBgColor = `bg-${colorName}-${Math.max(intensityNum - 400, 50)}`;
 
-		// Create variations for hover states, etc.
-		const hoverBgColor =
-			intensityNum >= 500
-				? `hover:bg-${colorName}-${Math.min(intensityNum + 100, 900)}`
-				: `hover:bg-${colorName}-${Math.max(intensityNum - 100, 50)}`;
-
-		// Light background variation for containers
-		const lightBgColor = `bg-${colorName}-${Math.max(
-			intensityNum - 400,
-			50
-		)}`;
-
-		return { textColor, bgColor: colorClass, hoverBgColor, lightBgColor };
+		return {
+			textColor,
+			bgColor: colorClass,
+			borderColor,
+			lightBgColor,
+		};
 	};
+
+	// Get current colors
+	const currentColors = currentCategory
+		? getCategoryColorClasses(currentCategory.color)
+		: {
+				textColor: "text-white",
+				bgColor: "from-gray-500 to-gray-700",
+				borderColor: "border-gray-300",
+				lightBgColor: "bg-gray-50",
+		  };
 
 	return (
 		<div className="h-full flex flex-col overflow-hidden">
@@ -115,7 +89,7 @@ export function Stack() {
 							size="sm"
 							className={
 								viewMode === "list"
-									? "bg-white shadow-sm text-gray-800 hover:text-gray-200"
+									? "bg-white shadow-sm text-gray-800 hover:text-gray-800"
 									: "bg-transparent hover:bg-gray-200 text-gray-600 hover:text-gray-800"
 							}
 							onClick={() => setViewMode("list")}
@@ -124,13 +98,11 @@ export function Stack() {
 							List
 						</Button>
 						<Button
-							variant={
-								viewMode === "visual" ? "default" : "ghost"
-							}
+							variant={viewMode === "visual" ? "default" : "ghost"}
 							size="sm"
 							className={
 								viewMode === "visual"
-									? "bg-white shadow-sm text-gray-800 hover:text-gray-200"
+									? "bg-white shadow-sm text-gray-800 hover:text-gray-800"
 									: "bg-transparent hover:bg-gray-200 text-gray-600 hover:text-gray-800"
 							}
 							onClick={() => setViewMode("visual")}
@@ -144,251 +116,143 @@ export function Stack() {
 
 			{/* Main content - Either list view or visual view */}
 			{viewMode === "list" ? (
-				<div className="flex-1 overflow-y-auto p-5 bg-gray-50 space-y-6">
-					{/* Category navigation and expand/collapse all */}
-					<div className="flex justify-between items-center mb-2">
-						<div className="flex space-x-2 overflow-x-auto pb-2 hide-scrollbar">
+				<div className="flex-1 overflow-hidden flex flex-col">
+					{/* Category Tabs */}
+					<div className="px-5 py-3 bg-gray-50 border-b overflow-x-auto hide-scrollbar">
+						<div className="flex space-x-2">
 							{stackData.categories.map((category) => {
-								const { textColor, bgColor } =
+								const isActive = activeCategory === category.id;
+								const { textColor, bgColor, borderColor } =
 									getCategoryColorClasses(category.color);
+
 								return (
 									<button
 										key={category.id}
-										className={`px-3 py-1.5 rounded-full text-sm font-medium transition-all whitespace-nowrap ${
-											isCategoryExpanded(category.id)
-												? `bg-gradient-to-r ${bgColor} ${textColor} shadow-md`
-												: "bg-white text-gray-700 border border-gray-200 hover:bg-gray-50"
-										}`}
-										onClick={() =>
-											toggleCategory(category.id)
-										}
+										className={`px-4 py-2 rounded-lg text-sm font-medium transition-all whitespace-nowrap
+                      ${
+							isActive
+								? `bg-gradient-to-r ${bgColor} ${textColor} shadow-md`
+								: `bg-white hover:bg-gray-50 text-gray-700 border ${borderColor}`
+						}`}
+										onClick={() => {
+											setActiveCategory(category.id);
+											setActiveTech(null);
+										}}
 									>
-										{category.name} (
-										{category.technologies.length})
+										<div className="flex items-center">
+											<div
+												className={`w-6 h-6 rounded-md flex items-center justify-center mr-2 
+                        ${
+							isActive
+								? "bg-white/20"
+								: `bg-gradient-to-r ${bgColor} ${textColor}`
+						}`}
+											>
+												<span
+													className={
+														isActive
+															? textColor
+															: "text-white"
+													}
+												>
+													{category.name.charAt(0)}
+												</span>
+											</div>
+											{category.name}
+											<span
+												className={`ml-2 px-1.5 py-0.5 rounded-full text-xs ${
+													isActive
+														? "bg-white/20"
+														: "bg-gray-100 text-gray-600"
+												}`}
+											>
+												{category.technologies.length}
+											</span>
+										</div>
 									</button>
 								);
 							})}
 						</div>
-
-						<Button
-							variant="outline"
-							size="sm"
-							onClick={
-								areAllCategoriesExpanded
-									? collapseAllCategories
-									: expandAllCategories
-							}
-							className="ml-2 whitespace-nowrap"
-						>
-							{areAllCategoriesExpanded ? (
-								<>
-									<Minus className="h-3.5 w-3.5 mr-1" />
-									Collapse All
-								</>
-							) : (
-								<>
-									<Plus className="h-3.5 w-3.5 mr-1" />
-									Expand All
-								</>
-							)}
-						</Button>
 					</div>
 
-					{stackData.categories.map((category) => {
-						const { textColor, lightBgColor } =
-							getCategoryColorClasses(category.color);
-						return (
-							<div
-								key={category.id}
-								className={`mb-5 rounded-lg border transition-all duration-300 ${
-									isCategoryExpanded(category.id)
-										? "shadow-md border-gray-300"
-										: "border-gray-200 hover:border-gray-300"
-								}`}
-							>
-								{/* Category header with adaptive text color */}
-								<div
-									className={`p-4 flex items-center cursor-pointer ${
-										isCategoryExpanded(category.id)
-											? `bg-gradient-to-r ${category.color} ${textColor}`
-											: "bg-white text-gray-800"
-									}`}
-									onClick={() => toggleCategory(category.id)}
-								>
+					{/* Technology Content Area with 2-column layout */}
+					<div className="flex-1 flex overflow-hidden">
+						{/* Left column: Technology list */}
+						<div className="w-1/3 border-r bg-gray-50 overflow-y-auto p-3 space-y-2">
+							{currentCategory?.technologies.map((tech) => {
+								const isActive = activeTech === tech.id;
+								const { bgColor, textColor } = currentColors;
+
+								return (
 									<div
-										className={`w-12 h-12 rounded-lg flex items-center justify-center bg-gradient-to-r ${category.color} text-white shadow-md flex-shrink-0`}
+										key={tech.id}
+										className={`p-3 rounded-lg cursor-pointer transition-all duration-200
+                      ${
+							isActive
+								? `bg-gradient-to-r ${bgColor} ${textColor} shadow-md`
+								: "bg-white border border-gray-200 hover:border-gray-300 text-gray-800"
+						}`}
+										onClick={() => setActiveTech(tech.id)}
 									>
-										<span className="text-lg font-bold">
-											{category.name.charAt(0)}
-										</span>
-									</div>
-									<div className="ml-4 flex-1">
-										<h3 className="text-lg font-medium flex items-center">
-											{category.name}
-											<span
-												className={`text-sm font-normal ml-2 ${
-													isCategoryExpanded(
-														category.id
-													)
-														? textColor
-														: "text-gray-600"
-												} opacity-80`}
-											>
-												{category.technologies.length}{" "}
-												technologies
-											</span>
-										</h3>
+										<div className="flex items-center justify-between">
+											<h3 className="font-medium">{tech.name}</h3>
+											{isActive && (
+												<CheckCircle className="h-4 w-4 text-white" />
+											)}
+										</div>
 										<p
-											className={`text-sm mt-1 ${
-												isCategoryExpanded(category.id)
-													? textColor
-													: "text-gray-600"
-											} opacity-90`}
+											className={`text-xs mt-1 ${
+												isActive
+													? "text-white/80"
+													: "text-gray-500"
+											}`}
 										>
-											{category.description}
+											{tech.description}
 										</p>
 									</div>
-									<div
-										className={
-											isCategoryExpanded(category.id)
-												? textColor
-												: "text-gray-600"
-										}
-									>
-										{isCategoryExpanded(category.id) ? (
-											<ChevronDown className="h-5 w-5" />
-										) : (
-											<ChevronRight className="h-5 w-5" />
+								);
+							})}
+						</div>
+
+						{/* Right column: Technology details */}
+						<div className="w-2/3 overflow-y-auto p-5">
+							<AnimatePresence mode="wait">
+								{activeTech ? (
+									<TechnologyDetail
+										key={activeTech}
+										technology={currentCategory?.technologies.find(
+											(t) => t.id === activeTech
 										)}
-									</div>
-								</div>
-
-								{/* Technologies grid - Animated expand/collapse */}
-								{isCategoryExpanded(category.id) && (
-									<div className="p-4 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 bg-gray-50 animate-in fade-in">
-										{category.technologies.map((tech) => {
-											const { textColor, bgColor } =
-												getCategoryColorClasses(
-													category.color
-												);
-											return (
-												<Card
-													key={tech.id}
-													className="overflow-hidden transition-all duration-300 border-gray-200 hover:shadow-md"
-													onMouseEnter={() =>
-														setHoveredTech(tech.id)
-													}
-													onMouseLeave={() =>
-														setHoveredTech(null)
-													}
-												>
-													{/* Tech header with adaptive coloring */}
-													<div
-														className={`p-4 flex items-center justify-between bg-gradient-to-r ${bgColor} ${textColor}`}
-													>
-														<div className="flex items-center">
-															<h4 className="font-medium">
-																{tech.name}
-															</h4>
-														</div>
-														<div className="flex items-center space-x-1">
-															{tech.url && (
-																<a
-																	href={
-																		tech.url
-																	}
-																	target="_blank"
-																	rel="noopener noreferrer"
-																	className={`p-1.5 rounded-full ${textColor} bg-white/20 hover:bg-white/40`}
-																>
-																	<ExternalLink className="h-3.5 w-3.5" />
-																</a>
-															)}
-														</div>
-													</div>
-
-													{/* Tech description */}
-													<div className="p-4 bg-white">
-														<p className="text-sm text-gray-700">
-															{tech.description}
-														</p>
-
-														<div className="mt-3 flex items-center space-x-2">
-															{/* Documentation link */}
-															{tech.url && (
-																<a
-																	href={
-																		tech.url
-																	}
-																	target="_blank"
-																	rel="noopener noreferrer"
-																	className="inline-flex items-center text-xs font-medium text-blue-700 hover:text-blue-900 bg-blue-50 hover:bg-blue-100 px-2 py-1 rounded-full"
-																>
-																	<Book className="h-3 w-3 mr-1" />
-																	Documentation
-																</a>
-															)}
-														</div>
-
-														{/* Alternatives section */}
-														{(hoveredTech ===
-															tech.id ||
-															tech.alternatives
-																.length <= 3) &&
-															tech.alternatives
-																.length > 0 && (
-																<div className="mt-3 pt-3 border-t border-dashed">
-																	<div className="text-xs font-medium text-gray-700 mb-2 flex items-center">
-																		<Info className="h-3 w-3 mr-1" />
-																		Alternatives:
-																	</div>
-																	<ul className="space-y-1">
-																		{tech.alternatives.map(
-																			(
-																				alt,
-																				index
-																			) => (
-																				<li
-																					key={
-																						index
-																					}
-																					className="text-xs text-gray-700 flex items-start"
-																				>
-																					<span className="text-gray-400 mr-1.5 mt-0.5">
-																						•
-																					</span>
-																					<div>
-																						<span className="font-medium text-gray-800">
-																							{
-																								alt.name
-																							}
-																						</span>
-																						{alt.reason && (
-																							<span className="ml-1 text-gray-600">
-																								(
-																								{
-																									alt.reason
-																								}
-
-																								)
-																							</span>
-																						)}
-																					</div>
-																				</li>
-																			)
-																		)}
-																	</ul>
-																</div>
-															)}
-													</div>
-												</Card>
-											);
-										})}
-									</div>
+										categoryColors={currentColors}
+									/>
+								) : (
+									<motion.div
+										key="no-selection"
+										initial={{ opacity: 0 }}
+										animate={{ opacity: 1 }}
+										exit={{ opacity: 0 }}
+										className="h-full flex items-center justify-center"
+									>
+										<div className="text-center p-8 max-w-md">
+											<div
+												className={`mx-auto w-16 h-16 rounded-full bg-gradient-to-r ${currentColors.bgColor} flex items-center justify-center mb-4`}
+											>
+												<Layers className="h-8 w-8 text-white" />
+											</div>
+											<h3 className="text-xl font-semibold text-gray-700 mb-2">
+												{currentCategory?.name} Technologies
+											</h3>
+											<p className="text-gray-500">
+												{currentCategory?.description} Select a
+												technology from the list to see detailed
+												information.
+											</p>
+										</div>
+									</motion.div>
 								)}
-							</div>
-						);
-					})}
+							</AnimatePresence>
+						</div>
+					</div>
 				</div>
 			) : (
 				// Visual view content
@@ -396,15 +260,168 @@ export function Stack() {
 					<StackVisual />
 				</div>
 			)}
-
-			{/* Footer with summary */}
-			<div className="p-4 bg-white border-t">
-				<p className="text-sm text-gray-700">
-					This technology stack was selected based on your project
-					requirements and will provide a robust foundation for your
-					development.
-				</p>
-			</div>
 		</div>
+	);
+}
+
+interface TechnologyDetailProps {
+	technology: any; // Using any for now, should be properly typed
+	categoryColors: {
+		textColor: string;
+		bgColor: string;
+		borderColor: string;
+		lightBgColor: string;
+	};
+}
+
+function TechnologyDetail({ technology, categoryColors }: TechnologyDetailProps) {
+	if (!technology) return null;
+
+	return (
+		<motion.div
+			initial={{ opacity: 0, x: 20 }}
+			animate={{ opacity: 1, x: 0 }}
+			exit={{ opacity: 0, x: -20 }}
+			transition={{ duration: 0.2 }}
+			className="h-full"
+		>
+			{/* Header */}
+			<div
+				className={`p-4 rounded-t-lg bg-gradient-to-r ${categoryColors.bgColor} ${categoryColors.textColor}`}
+			>
+				<div className="flex items-center justify-between">
+					<h2 className="text-2xl font-semibold">{technology.name}</h2>
+					{technology.url && (
+						<a
+							href={technology.url}
+							target="_blank"
+							rel="noopener noreferrer"
+							className={`p-2 rounded-full ${categoryColors.textColor} bg-white/20 hover:bg-white/40`}
+						>
+							<ExternalLink className="h-5 w-5" />
+						</a>
+					)}
+				</div>
+				<p className="mt-1 opacity-90">{technology.description}</p>
+			</div>
+
+			{/* Main content */}
+			<div className="p-5 space-y-6">
+				{/* Project relevance */}
+				<section>
+					<h3
+						className={`flex items-center text-lg font-medium mb-2 text-gray-800`}
+					>
+						<div
+							className={`w-6 h-6 rounded-full mr-2 flex items-center justify-center bg-gradient-to-r ${categoryColors.bgColor} ${categoryColors.textColor}`}
+						>
+							<CheckCircle className="h-4 w-4" />
+						</div>
+						Why we chose this for your project
+					</h3>
+					<p className="text-gray-700 leading-relaxed">
+						{technology.projectRelevance}
+					</p>
+				</section>
+
+				{/* Differentiators */}
+				<section>
+					<h3
+						className={`flex items-center text-lg font-medium mb-3 text-gray-800`}
+					>
+						<div
+							className={`w-6 h-6 rounded-full mr-2 flex items-center justify-center bg-gradient-to-r ${categoryColors.bgColor} ${categoryColors.textColor}`}
+						>
+							<Info className="h-4 w-4" />
+						</div>
+						Key advantages
+					</h3>
+					<ul className="space-y-2">
+						{technology.differentiators.map(
+							(point: string, index: number) => (
+								<li key={index} className="flex items-start">
+									<div
+										className={`mt-1 h-4 w-4 rounded-full bg-gradient-to-r ${categoryColors.bgColor} flex-shrink-0 mr-2`}
+									/>
+									<span className="text-gray-700">{point}</span>
+								</li>
+							)
+						)}
+					</ul>
+				</section>
+
+				{/* Learning Resources */}
+				<section>
+					<h3
+						className={`flex items-center text-lg font-medium mb-3 text-gray-800`}
+					>
+						<div
+							className={`w-6 h-6 rounded-full mr-2 flex items-center justify-center bg-gradient-to-r ${categoryColors.bgColor} ${categoryColors.textColor}`}
+						>
+							<Book className="h-4 w-4" />
+						</div>
+						Learning Resources
+					</h3>
+					<div className="flex flex-wrap gap-2">
+						{technology.learningResources.map(
+							(resource: any, index: number) => (
+								<a
+									key={index}
+									href={resource.url}
+									target="_blank"
+									rel="noopener noreferrer"
+									className={`py-2 px-4 rounded-lg bg-white border ${categoryColors.borderColor} hover:shadow-md transition-shadow flex items-center`}
+								>
+									<Book className="h-4 w-4 mr-2 text-gray-600" />
+									<span className="text-sm font-medium text-gray-700">
+										{resource.name}
+									</span>
+									<ExternalLink className="h-3.5 w-3.5 ml-2 text-gray-400" />
+								</a>
+							)
+						)}
+					</div>
+				</section>
+
+				{/* Alternatives */}
+				{technology.alternatives.length > 0 && (
+					<section>
+						<h3
+							className={`flex items-center text-lg font-medium mb-3 text-gray-800`}
+						>
+							<div
+								className={`w-6 h-6 rounded-full mr-2 flex items-center justify-center bg-gradient-to-r ${categoryColors.bgColor} ${categoryColors.textColor}`}
+							>
+								<Layers className="h-4 w-4" />
+							</div>
+							Alternatives Considered
+						</h3>
+						<div className="bg-gray-50 p-4 rounded-lg border border-gray-200">
+							{technology.alternatives.map((alt: any, index: number) => (
+								<div
+									key={index}
+									className={`${
+										index !== 0
+											? "border-t border-gray-200 mt-3 pt-3"
+											: ""
+									}`}
+								>
+									<div className="flex items-center">
+										<span className="font-medium text-gray-800 mr-2">
+											{alt.name}
+										</span>
+										{alt.reason && (
+											<span className="text-sm text-gray-600">
+												— {alt.reason}
+											</span>
+										)}
+									</div>
+								</div>
+							))}
+						</div>
+					</section>
+				)}
+			</div>
+		</motion.div>
 	);
 }

@@ -71,26 +71,23 @@ const StackVisual = () => {
 		// Distribute categories around the circle
 		categories.forEach((category, categoryIndex) => {
 			const color = getColorFromGradient(category.color);
-			const categoryAngle =
-				(2 * Math.PI * categoryIndex) / categories.length;
+			const categoryAngle = (2 * Math.PI * categoryIndex) / categories.length;
 			const categoryTechCount = category.technologies.length;
 
 			// Calculate bubble size based on name length and container size
 			// Larger base size to ensure text fits
-			const baseBubbleSize = Math.min(width, height) * 0.09;
+			const baseBubbleSize = Math.min(width, height) * 0.12;
 
 			// Create bubbles for this category's technologies
 			category.technologies.forEach((tech, techIndex) => {
 				// Calculate angle within the category segment
-				const angleOffset =
-					(Math.PI / 3) * (techIndex / categoryTechCount - 0.5);
+				const angleOffset = (Math.PI / 3) * (techIndex / categoryTechCount - 0.5);
 				const angle = categoryAngle + angleOffset;
 
 				// Calculate distance from center - vary slightly for visual interest
 				// Middle items in a category are closer to center
 				const distanceVariation =
-					Math.abs(techIndex - (categoryTechCount - 1) / 2) /
-					categoryTechCount;
+					Math.abs(techIndex - (categoryTechCount - 1) / 2) / categoryTechCount;
 				const distance = baseRadius * (0.8 + distanceVariation * 0.4);
 
 				// Size based on name length (longer names get slightly larger bubbles)
@@ -150,20 +147,28 @@ const StackVisual = () => {
 		const centerX = containerSize.width / 2;
 		const centerY = containerSize.height / 2;
 
+		// Compute an even distribution of angles
+		const angleStep = (2 * Math.PI) / bubbles.length;
+
 		const animate = () => {
 			setBubbles((prevBubbles) => {
-				return prevBubbles.map((bubble) => {
-					let { angle, distance, targetDistance, orbitSpeed } =
-						bubble;
+				return prevBubbles.map((bubble, index) => {
+					let { angle, distance, targetDistance, orbitSpeed } = bubble;
 
-					// Orbit motion - rotate around the center
-					// Slow down when hovered or selected
+					// Force even distribution by using computed angle
+					const idealAngle = index * angleStep;
+
+					// Gentle correction towards ideal angle
+					const angleDiff = idealAngle - angle;
+
+					// Slow rotation with angle correction
 					const speedModifier =
-						hoveredBubble === bubble.id ||
-						selectedBubble === bubble.id
-							? 0.1
+						hoveredBubble === bubble.id || selectedBubble === bubble.id
+							? 0.1 // Slow down when hovered/selected
 							: 1;
-					angle += orbitSpeed * speedModifier;
+
+					// Adjust angle with correction
+					angle += orbitSpeed * speedModifier + angleDiff * 0.01;
 
 					// Pull toward target distance (orbital stability)
 					const distanceDiff = targetDistance - distance;
@@ -171,15 +176,13 @@ const StackVisual = () => {
 
 					// When selected, pull very close to center
 					if (selectedBubble === bubble.id) {
-						const pullTowardCenter =
-							targetDistance * 0.6 - distance;
+						const pullTowardCenter = targetDistance * 0.6 - distance;
 						distance += pullTowardCenter * 0.1;
 					}
 
 					// When hovered, slightly pull toward center
 					if (hoveredBubble === bubble.id) {
-						const pullTowardCenter =
-							targetDistance * 0.9 - distance;
+						const pullTowardCenter = targetDistance * 0.9 - distance;
 						distance += pullTowardCenter * 0.1;
 					}
 
@@ -216,17 +219,25 @@ const StackVisual = () => {
 
 	return (
 		<div
-			className="relative h-full overflow-hidden bg-gradient-to-b from-gray-50 to-gray-100"
+			className="relative h-full w-full overflow-hidden bg-gradient-to-b from-gray-50 to-gray-100"
 			ref={containerRef}
 		>
-			{/* Central project circle */}
+			{/* Central project circle - Improved Centering */}
 			<motion.div
-				className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 rounded-full bg-gradient-to-br from-gray-700 to-gray-900 text-white shadow-lg z-30 flex flex-col items-center justify-center cursor-pointer"
+				className="absolute rounded-full bg-gradient-to-br from-gray-700 to-gray-900 text-white shadow-lg z-30 flex flex-col items-center justify-center cursor-pointer"
+				style={{
+					width: "250px",
+					height: "250px",
+					position: "absolute",
+					top: "50%",
+					left: "50%",
+					marginLeft: "-125px", // Half of width
+					marginTop: "-125px", // Half of height
+					transform: "translate(0,0)", // Ensure no conflicting transforms
+				}}
 				initial={{ scale: 0 }}
 				animate={{
 					scale: 1,
-					width: "160px",
-					height: "160px",
 				}}
 				transition={{
 					type: "spring",
@@ -238,9 +249,7 @@ const StackVisual = () => {
 				whileHover={{ scale: 1.05 }}
 			>
 				<motion.div className="text-center p-2">
-					<div className="text-lg font-bold">
-						{stackData.projectType}
-					</div>
+					<div className="text-lg font-bold">{stackData.projectType}</div>
 					<div className="text-sm opacity-80">
 						{totalTechnologies} Technologies
 					</div>
@@ -251,12 +260,8 @@ const StackVisual = () => {
 			<div
 				className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 rounded-full border-4 border-gray-200/20"
 				style={{
-					width:
-						Math.min(containerSize.width, containerSize.height) *
-						0.75,
-					height:
-						Math.min(containerSize.width, containerSize.height) *
-						0.75,
+					width: Math.min(containerSize.width, containerSize.height) * 0.75,
+					height: Math.min(containerSize.width, containerSize.height) * 0.75,
 				}}
 			/>
 
@@ -267,8 +272,7 @@ const StackVisual = () => {
 					const centerX = containerSize.width / 2;
 					const centerY = containerSize.height / 2;
 					const isHighlighted =
-						hoveredBubble === bubble.id ||
-						selectedBubble === bubble.id;
+						hoveredBubble === bubble.id || selectedBubble === bubble.id;
 
 					return (
 						<line
@@ -339,9 +343,7 @@ const StackVisual = () => {
 							onMouseLeave={() => setHoveredBubble(null)}
 							onClick={() =>
 								setSelectedBubble(
-									selectedBubble === bubble.id
-										? null
-										: bubble.id
+									selectedBubble === bubble.id ? null : bubble.id
 								)
 							}
 							transition={{
@@ -353,9 +355,7 @@ const StackVisual = () => {
 						>
 							{isSelected ? (
 								<div className="p-3 text-center max-w-full">
-									<div className="font-bold mb-1">
-										{bubble.name}
-									</div>
+									<div className="font-bold mb-1">{bubble.name}</div>
 									<div className="text-xs opacity-80 mb-2">
 										{bubble.categoryName}
 									</div>
@@ -373,9 +373,7 @@ const StackVisual = () => {
 								</div>
 							) : (
 								<div className="text-center max-w-full p-2">
-									<div className="truncate px-1">
-										{bubble.name}
-									</div>
+									<div className="truncate px-1">{bubble.name}</div>
 								</div>
 							)}
 						</motion.div>

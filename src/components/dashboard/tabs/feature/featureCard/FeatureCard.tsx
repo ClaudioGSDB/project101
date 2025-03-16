@@ -1,82 +1,173 @@
 "use client";
 import React from "react";
-import { useDraggable } from "@dnd-kit/core";
-import { Card } from "@/components/ui/card";
-import { Grip, ArrowRightLeft } from "lucide-react";
+import { ArrowRight, Zap, Award } from "lucide-react";
+import { AIFeature, AICategory } from "../sampleData";
 
 interface FeatureCardProps {
-	id: string;
-	x: number;
-	y: number;
-	featureName: string;
-	featureDescription: string;
-	bulletPoints?: string[];
-	currentScale: number;
-	isBeingDragged?: boolean;
+	feature: AIFeature;
+	category: AICategory;
+	isSelected: boolean;
+	onSelect: () => void;
+	onHighlightRelated: () => void;
 }
 
-export function FeatureCard({
-	id,
-	x,
-	y,
-	featureName,
-	featureDescription,
-	bulletPoints = [],
-	currentScale,
-	isBeingDragged = false,
-}: FeatureCardProps) {
-	const { attributes, listeners, setNodeRef } = useDraggable({
-		id: id,
-	});
+// ComplexityBadge component for showing feature complexity
+const ComplexityBadge = ({ complexity }: { complexity: AIFeature["complexity"] }) => {
+	const getComplexityInfo = () => {
+		switch (complexity) {
+			case "simple":
+				return {
+					color: "bg-green-100 text-green-800 border-green-200",
+					label: "Simple",
+				};
+			case "moderate":
+				return {
+					color: "bg-amber-100 text-amber-800 border-amber-200",
+					label: "Moderate",
+				};
+			case "complex":
+				return {
+					color: "bg-indigo-100 text-indigo-800 border-indigo-200",
+					label: "Complex",
+				};
+			default:
+				return {
+					color: "bg-gray-100 text-gray-800 border-gray-200",
+					label: "Unknown",
+				};
+		}
+	};
+
+	const { color, label } = getComplexityInfo();
 
 	return (
-		<Card
-			ref={setNodeRef}
-			id={id}
-			className="absolute w-72 overflow-hidden cursor-move rounded-lg bg-gradient-to-br from-white to-gray-50 dark:from-gray-800 dark:to-gray-900 shadow-md hover:shadow-lg transition-shadow duration-200"
-			style={{
-				left: x,
-				top: y,
-				transition: isBeingDragged ? "none" : "all 0.2s ease",
-				zIndex: isBeingDragged ? 10 : 1,
-			}}
-			{...listeners}
-			{...attributes}
+		<span
+			className={`text-xs font-medium px-2 py-1 rounded-full border ${color} flex items-center gap-1`}
 		>
-			{/* Header with visual handle */}
-			<div className="px-4 py-3 bg-gradient-to-r from-indigo-500/10 to-blue-500/10 border-b flex items-center justify-between">
-				<h3 className="font-medium text-gray-800 dark:text-gray-200 truncate">
-					{featureName}
-				</h3>
-				<Grip className="w-4 h-4 text-gray-400" />
-			</div>
+			<Zap size={12} />
+			<span>{label}</span>
+		</span>
+	);
+};
 
-			{/* Content area */}
+// ValueBadge component for showing user value
+const ValueBadge = ({ value }: { value: AIFeature["user_value"] }) => {
+	const getValueInfo = () => {
+		switch (value) {
+			case "high":
+				return {
+					color: "bg-purple-100 text-purple-800 border-purple-200",
+					label: "High Value",
+				};
+			case "medium":
+				return {
+					color: "bg-blue-100 text-blue-800 border-blue-200",
+					label: "Medium Value",
+				};
+			case "low":
+				return {
+					color: "bg-gray-100 text-gray-800 border-gray-200",
+					label: "Low Value",
+				};
+			default:
+				return {
+					color: "bg-gray-100 text-gray-800 border-gray-200",
+					label: "Unknown",
+				};
+		}
+	};
+
+	const { color, label } = getValueInfo();
+
+	return (
+		<span
+			className={`text-xs font-medium px-2 py-1 rounded-full border ${color} flex items-center gap-1`}
+		>
+			<Award size={12} />
+			<span>{label}</span>
+		</span>
+	);
+};
+
+export function FeatureCard({
+	feature,
+	category,
+	isSelected,
+	onSelect,
+	onHighlightRelated,
+}: FeatureCardProps) {
+	return (
+		<div
+			className={`border rounded-lg transition-all duration-200 cursor-pointer bg-white h-full
+        ${
+			isSelected
+				? "border-2 border-indigo-500 shadow-md transform scale-[1.02]"
+				: "border-gray-200 hover:border-indigo-300 hover:shadow"
+		}`}
+			onClick={onSelect}
+		>
 			<div className="p-4">
-				<p className="text-sm text-gray-600 dark:text-gray-400 line-clamp-2">
-					{featureDescription}
+				<div className="flex justify-between items-start mb-2">
+					<div>
+						<h3 className="font-medium text-gray-800">
+							{feature.feature_name}
+						</h3>
+						<div
+							className={`mt-1 text-xs px-2 py-0.5 inline-block rounded-full bg-gradient-to-r ${category.color} bg-opacity-10 text-gray-700`}
+						>
+							{category.category_name}
+						</div>
+					</div>
+				</div>
+
+				<p className="text-sm text-gray-600 my-2 line-clamp-2">
+					{feature.feature_description}
 				</p>
 
-				{bulletPoints.length > 0 && (
-					<div className="mt-3 space-y-2">
-						{bulletPoints.map((point, index) => (
-							<div
-								key={index}
-								className="flex items-start space-x-2"
-							>
-								<div className="h-5 w-5 rounded-full bg-indigo-100 dark:bg-indigo-900 flex items-center justify-center flex-shrink-0 mt-0.5">
-									<span className="text-xs text-indigo-700 dark:text-indigo-300 font-medium">
-										{index + 1}
-									</span>
-								</div>
-								<p className="text-xs text-gray-600 dark:text-gray-400 flex-1">
-									{point}
-								</p>
+				<div className="flex flex-wrap gap-2 mt-3 mb-3">
+					<ComplexityBadge complexity={feature.complexity} />
+					<ValueBadge value={feature.user_value} />
+				</div>
+
+				{/* Preview bullet points */}
+				{feature.bullet_points.length > 0 && (
+					<div className="mt-2">
+						<div className="flex items-start space-x-2 mb-1">
+							<div className="h-4 w-4 rounded-full bg-indigo-100 flex items-center justify-center flex-shrink-0 mt-0.5">
+								<span className="text-xs text-indigo-700 font-medium">
+									•
+								</span>
 							</div>
-						))}
+							<p className="text-xs text-gray-600 flex-1 line-clamp-1">
+								{feature.bullet_points[0]}
+							</p>
+						</div>
+						{feature.bullet_points.length > 1 && (
+							<p className="text-xs text-gray-500 ml-6">
+								+{feature.bullet_points.length - 1} more points
+							</p>
+						)}
+					</div>
+				)}
+
+				{/* Related features link */}
+				{feature.related_features.length > 0 && (
+					<div className="mt-3 pt-2 border-t border-gray-100">
+						<button
+							onClick={(e) => {
+								e.stopPropagation();
+								onHighlightRelated();
+							}}
+							className="text-xs text-indigo-600 hover:text-indigo-800 flex items-center gap-1"
+						>
+							<span>
+								{feature.related_features.length} Related Features
+							</span>
+							<ArrowRight size={12} />
+						</button>
 					</div>
 				)}
 			</div>
-		</Card>
+		</div>
 	);
 }

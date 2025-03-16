@@ -1,277 +1,266 @@
 "use client";
-import React, { useState, useRef, useEffect } from "react";
-import { TransformWrapper, TransformComponent } from "react-zoom-pan-pinch";
-import { DndContext } from "@dnd-kit/core";
+import React, { useState, useEffect } from "react";
+import { Search, Plus, ChevronDown, ChevronUp } from "lucide-react";
 import { FeatureCard } from "./featureCard/FeatureCard";
-import Xarrow, { anchorType } from "react-xarrows";
-import { ZoomIn, ZoomOut } from "lucide-react";
-import { Button } from "@/components/ui/button";
-import { createOptimizedLayout } from "./LayoutAlgorithm";
-import { sampleData } from "./sample";
-import { AIFeature, CardData, Connection } from "@/types/FeatureComponent";
-
-// Function to determine fixed anchor points based on relative positions
-const determineAnchorPoints = (
-	startPos: { x: number; y: number },
-	endPos: { x: number; y: number }
-): { start: anchorType; end: anchorType } => {
-	// Calculate the angle between positions
-	const dx = endPos.x - startPos.x;
-	const dy = endPos.y - startPos.y;
-	const angle = Math.atan2(dy, dx) * (180 / Math.PI); // Convert to degrees
-
-	// Determine anchor points based on the angle
-	if (angle >= -45 && angle < 45) {
-		// End card is to the right of start card
-		return { start: "right", end: "left" };
-	} else if (angle >= 45 && angle < 135) {
-		// End card is below start card
-		return { start: "bottom", end: "top" };
-	} else if (
-		(angle >= 135 && angle <= 180) ||
-		(angle >= -180 && angle < -135)
-	) {
-		// End card is to the left of start card
-		return { start: "left", end: "right" };
-	} else {
-		// End card is above start card
-		return { start: "top", end: "bottom" };
-	}
-};
+import { FeatureDetail } from "./featureDetail/FeatureDetail";
+import { sampleData, AIFeature, AICategory } from "./sampleData";
 
 export function Feature() {
-	// Transform and zoom state
-	const [isPanZoomEnabled, setIsPanZoomEnabled] = useState(true);
-	const transformComponentRef = useRef(null);
-	const [currentScale, setCurrentScale] = useState(1);
-	const [panPosition, setPanPosition] = useState({ x: 0, y: 0 });
-	const [updateKey, setUpdateKey] = useState(0);
+	// State for managing expanded categories
+	const [expandedCategories, setExpandedCategories] = useState<string[]>([]);
 
-	// Card state
-	const [cards, setCards] = useState<CardData[]>([]);
-	const [connections, setConnections] = useState<Connection[]>([]);
+	// State for selecting a feature
+	const [selectedFeature, setSelectedFeature] = useState<{
+		feature: AIFeature;
+		category: AICategory;
+	} | null>(null);
 
-	// Drag state
-	const [activeDrag, setActiveDrag] = useState<string | null>(null);
-	const [dragOffset, setDragOffset] = useState({ x: 0, y: 0 });
+	// State for search functionality
+	const [searchQuery, setSearchQuery] = useState("");
 
-	// Container ref for proper clipping
-	const containerRef = useRef<HTMLDivElement>(null);
+	// State for highlighting related features
+	const [highlightedFeatureIds, setHighlightedFeatureIds] = useState<string[]>([]);
 
-	// Parse AI response and create card layout
-	const parseAIResponse = (
-		features: AIFeature[]
-	): { cards: CardData[]; connections: Connection[] } => {
-		// Use optimized layout algorithm
-		const cards = createOptimizedLayout(features);
+	// Initialize with first category expanded
+	useEffect(() => {
+		if (sampleData.categories.length > 0) {
+			setExpandedCategories([sampleData.categories[0].category_id]);
+		}
+	}, []);
 
-		// Create unique connections
-		const connections: Connection[] = [];
-		const addedConnections = new Set<string>();
+	// Toggle category expansion
+	const toggleCategory = (categoryId: string) => {
+		setExpandedCategories((prev) =>
+			prev.includes(categoryId)
+				? prev.filter((id) => id !== categoryId)
+				: [...prev, categoryId]
+		);
+	};
 
-		features.forEach((feature) => {
-			feature.related_features.forEach((relatedId) => {
-				// Create a unique key for this connection (ordered to avoid duplicates)
-				const ids = [feature.feature_id, relatedId].sort();
-				const connectionKey = `${ids[0]}-${ids[1]}`;
+	// Select a feature to view details
+	const handleSelectFeature = (feature: AIFeature, category: AICategory) => {
+		setSelectedFeature({ feature, category });
+		// Clear any highlighted features when selecting a new one
+		setHighlightedFeatureIds([]);
+	};
 
-				if (!addedConnections.has(connectionKey)) {
-					connections.push({
-						start: feature.feature_id,
-						end: relatedId,
-					});
-					addedConnections.add(connectionKey);
+	// Close the feature detail panel
+	const handleCloseDetail = () => {
+		setSelectedFeature(null);
+		setHighlightedFeatureIds([]);
+	};
+
+	// Highlight related features when requested
+	const handleHighlightRelated = (featureIds: string[]) => {
+		setHighlightedFeatureIds(featureIds);
+
+		// Make sure categories containing related features are expanded
+		const categoriesToExpand: string[] = [];
+
+		sampleData.categories.forEach((category) => {
+			category.features.forEach((feature) => {
+				if (
+					featureIds.includes(feature.feature_id) &&
+					!expandedCategories.includes(category.category_id)
+				) {
+					categoriesToExpand.push(category.category_id);
 				}
 			});
 		});
 
-		return { cards, connections };
-	};
-
-	// Initialize data
-	useEffect(() => {
-		const { cards, connections } = parseAIResponse(sampleData.Features);
-		setCards(cards);
-		setConnections(connections);
-	}, []);
-
-	// Drag handlers
-	const handleDragStart = (event: any) => {
-		setIsPanZoomEnabled(false);
-		setActiveDrag(event.active.id);
-		setDragOffset({ x: 0, y: 0 });
-	};
-
-	const handleDragMove = (event: any) => {
-		if (!activeDrag) return;
-
-		setDragOffset({
-			x: event.delta.x / currentScale,
-			y: event.delta.y / currentScale,
-		});
-
-		setUpdateKey((prev) => prev + 1);
-	};
-
-	const handleDragEnd = (event: any) => {
-		if (!activeDrag) return;
-
-		setCards((prevCards) =>
-			prevCards.map((card) =>
-				card.id === event.active.id
-					? {
-							...card,
-							x: card.x + dragOffset.x,
-							y: card.y + dragOffset.y,
-					  }
-					: card
-			)
-		);
-
-		setIsPanZoomEnabled(true);
-		setActiveDrag(null);
-		setDragOffset({ x: 0, y: 0 });
-		setUpdateKey((prev) => prev + 1);
-	};
-
-	// Transform handlers
-	const handleTransform = (e: any) => {
-		setCurrentScale(e.state.scale);
-		setPanPosition({ x: e.state.positionX, y: e.state.positionY });
-		setUpdateKey((prev) => prev + 1);
-	};
-
-	// Get current position for a card (accounting for drag)
-	const getCardPosition = (card: CardData) => {
-		if (card.id === activeDrag) {
-			return {
-				x: card.x + dragOffset.x,
-				y: card.y + dragOffset.y,
-			};
-		}
-		return { x: card.x, y: card.y };
-	};
-
-	// Zoom helper functions
-	const handleZoomIn = () => {
-		if (transformComponentRef.current) {
-			// @ts-ignore - we know the ref has zoomIn method
-			transformComponentRef.current.zoomIn();
+		if (categoriesToExpand.length > 0) {
+			setExpandedCategories((prev) => [...prev, ...categoriesToExpand]);
 		}
 	};
 
-	const handleZoomOut = () => {
-		if (transformComponentRef.current) {
-			// @ts-ignore - we know the ref has zoomOut method
-			transformComponentRef.current.zoomOut();
-		}
-	};
-
-	// Pre-compute anchor points when cards or drag state changes
-	const getConnectionAnchors = (connection: Connection) => {
-		const startCard = cards.find((card) => card.id === connection.start);
-		const endCard = cards.find((card) => card.id === connection.end);
-
-		if (!startCard || !endCard) {
-			return { start: "right" as anchorType, end: "left" as anchorType };
-		}
-
-		// Get positions accounting for any active dragging
-		const startPos = getCardPosition(startCard);
-		const endPos = getCardPosition(endCard);
-
-		return determineAnchorPoints(startPos, endPos);
-	};
+	// Filter categories and features based on search
+	const filteredCategories = searchQuery
+		? sampleData.categories
+				.map((category) => ({
+					...category,
+					features: category.features.filter(
+						(feature) =>
+							feature.feature_name
+								.toLowerCase()
+								.includes(searchQuery.toLowerCase()) ||
+							feature.feature_description
+								.toLowerCase()
+								.includes(searchQuery.toLowerCase()) ||
+							feature.bullet_points.some((point) =>
+								point.toLowerCase().includes(searchQuery.toLowerCase())
+							)
+					),
+				}))
+				.filter((category) => category.features.length > 0)
+		: sampleData.categories;
 
 	return (
-		<div
-			ref={containerRef}
-			className="w-full h-full border rounded-xl overflow-hidden relative"
-		>
-			<DndContext
-				onDragStart={handleDragStart}
-				onDragMove={handleDragMove}
-				onDragEnd={handleDragEnd}
-			>
-				<TransformWrapper
-					limitToBounds={false}
-					centerOnInit={false}
-					minScale={0.1}
-					maxScale={3}
-					initialScale={0.8}
-					wheel={{ smoothStep: 0.0005 }}
-					disabled={!isPanZoomEnabled}
-					ref={transformComponentRef}
-					onTransformed={handleTransform}
-					onPanning={handleTransform}
-				>
-					<TransformComponent>
-						<div className="min-w-[100vw] min-h-[100vh]" />
+		<div className="h-full flex flex-col">
+			{/* Header with project info and search */}
+			<div className="p-4 border-b bg-white">
+				<div className="flex justify-between items-center mb-3">
+					<div>
+						<h1 className="text-xl font-bold text-gray-800">
+							{sampleData.project_name}
+						</h1>
+						<p className="text-sm text-gray-600 mt-1">
+							{sampleData.project_description}
+						</p>
+					</div>
+					<button className="px-4 py-2 bg-indigo-500 text-white rounded-lg hover:bg-indigo-600 flex items-center gap-2">
+						<Plus size={16} />
+						<span>Add Feature</span>
+					</button>
+				</div>
 
-						{cards.map((card) => {
-							const position = getCardPosition(card);
-							return (
-								<FeatureCard
-									key={card.id}
-									id={card.id}
-									x={position.x}
-									y={position.y}
-									featureName={card.featureName}
-									featureDescription={card.featureDescription}
-									bulletPoints={card.bulletPoints}
-									currentScale={currentScale}
-									isBeingDragged={card.id === activeDrag}
-								/>
-							);
-						})}
-					</TransformComponent>
-				</TransformWrapper>
+				<div className="relative">
+					<Search
+						className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400"
+						size={18}
+					/>
+					<input
+						type="text"
+						placeholder="Search features..."
+						className="w-full pl-10 pr-4 py-2 border rounded-lg focus:ring-2 focus:ring-indigo-200 focus:border-indigo-500"
+						value={searchQuery}
+						onChange={(e) => setSearchQuery(e.target.value)}
+					/>
+				</div>
+			</div>
 
-				{/* Connection arrows */}
+			{/* Main content area */}
+			<div className="flex-1 overflow-hidden flex">
+				{/* Features list */}
 				<div
-					className="absolute inset-0 pointer-events-none overflow-hidden"
-					style={{ clipPath: "inset(0)" }}
+					className={`${
+						selectedFeature ? "w-2/3" : "w-full"
+					} overflow-y-auto bg-gray-50`}
 				>
-					{connections.map((connection, index) => {
-						// Get stable anchor points based on relative positions
-						const anchors = getConnectionAnchors(connection);
+					<div className="p-4">
+						{filteredCategories.map((category) => (
+							<div key={category.category_id} className="mb-4">
+								{/* Category header */}
+								<div
+									className={`p-3 rounded-lg cursor-pointer transition-all duration-200
+                    ${
+						expandedCategories.includes(category.category_id)
+							? `bg-gradient-to-r ${category.color} text-white`
+							: "bg-white border border-gray-200 hover:border-gray-300"
+					}`}
+									onClick={() => toggleCategory(category.category_id)}
+								>
+									<div className="flex items-center justify-between">
+										<div className="flex items-center gap-2">
+											<h2 className="font-semibold">
+												{category.category_name}
+											</h2>
+											<span
+												className={`text-xs px-2 py-0.5 rounded-full 
+                        ${
+							expandedCategories.includes(category.category_id)
+								? "bg-white/20"
+								: "bg-gray-100"
+						}`}
+											>
+												{category.features.length}
+											</span>
+										</div>
+										{expandedCategories.includes(
+											category.category_id
+										) ? (
+											<ChevronUp size={18} />
+										) : (
+											<ChevronDown size={18} />
+										)}
+									</div>
 
-						return (
-							<Xarrow
-								key={`${index}-${updateKey}`}
-								start={connection.start}
-								end={connection.end}
-								color="#6366f1"
-								strokeWidth={2}
-								path="smooth"
-								curveness={0.3}
-								startAnchor={anchors.start}
-								endAnchor={anchors.end}
-								showHead={true}
-								headSize={6}
-							/>
-						);
-					})}
+									{expandedCategories.includes(
+										category.category_id
+									) && (
+										<p
+											className={`mt-1 text-sm ${
+												expandedCategories.includes(
+													category.category_id
+												)
+													? "text-white/80"
+													: "text-gray-500"
+											}`}
+										>
+											{category.category_description}
+										</p>
+									)}
+								</div>
+
+								{/* Feature cards */}
+								{expandedCategories.includes(category.category_id) && (
+									<div className="mt-3 grid grid-cols-1 md:grid-cols-2 gap-3">
+										{category.features.map((feature) => (
+											<div
+												key={feature.feature_id}
+												className={`transition-all duration-300 ${
+													highlightedFeatureIds.includes(
+														feature.feature_id
+													)
+														? "ring-2 ring-indigo-500 ring-offset-2"
+														: ""
+												}`}
+											>
+												<FeatureCard
+													feature={feature}
+													category={category}
+													isSelected={
+														selectedFeature?.feature
+															.feature_id ===
+														feature.feature_id
+													}
+													onSelect={() =>
+														handleSelectFeature(
+															feature,
+															category
+														)
+													}
+													onHighlightRelated={() =>
+														handleHighlightRelated(
+															feature.related_features
+														)
+													}
+												/>
+											</div>
+										))}
+									</div>
+								)}
+							</div>
+						))}
+
+						{filteredCategories.length === 0 && (
+							<div className="flex flex-col items-center justify-center p-8 text-center">
+								<div className="w-16 h-16 bg-gray-100 rounded-full flex items-center justify-center mb-4">
+									<Search size={24} className="text-gray-400" />
+								</div>
+								<h3 className="text-lg font-medium text-gray-700">
+									No features found
+								</h3>
+								<p className="text-gray-500 mt-1">
+									Try adjusting your search query
+								</p>
+							</div>
+						)}
+					</div>
 				</div>
 
-				{/* Zoom controls */}
-				<div className="absolute bottom-4 right-4 flex space-x-2">
-					<Button
-						variant="outline"
-						size="icon"
-						onClick={handleZoomIn}
-					>
-						<ZoomIn className="h-4 w-4" />
-					</Button>
-					<Button
-						variant="outline"
-						size="icon"
-						onClick={handleZoomOut}
-					>
-						<ZoomOut className="h-4 w-4" />
-					</Button>
-				</div>
-			</DndContext>
+				{/* Selected feature detail panel */}
+				{selectedFeature && (
+					<div className="w-1/3 border-l">
+						<FeatureDetail
+							feature={selectedFeature.feature}
+							category={selectedFeature.category}
+							allCategories={sampleData.categories}
+							onClose={handleCloseDetail}
+							onHighlightRelated={handleHighlightRelated}
+						/>
+					</div>
+				)}
+			</div>
 		</div>
 	);
 }

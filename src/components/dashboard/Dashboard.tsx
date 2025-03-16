@@ -53,9 +53,7 @@ export function DashboardLayout() {
 					<div className="bg-gradient-to-r from-indigo-500 to-blue-500 text-white rounded-lg p-3">
 						{sidebarExpanded ? (
 							<>
-								<h1 className="font-semibold text-sm">
-									Project101
-								</h1>
+								<h1 className="font-semibold text-sm">Project101</h1>
 								<p className="text-xs opacity-80 mt-1">
 									AI-Powered Builder
 								</p>
@@ -94,9 +92,7 @@ export function DashboardLayout() {
 									}`}
 								/>
 								{sidebarExpanded && (
-									<span className="capitalize">
-										{tab.label}
-									</span>
+									<span className="capitalize">{tab.label}</span>
 								)}
 							</button>
 						);

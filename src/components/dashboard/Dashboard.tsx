@@ -13,8 +13,9 @@ import {
 	Route, // New icon for Roadmap
 	FileText, // New icon for Summary
 } from "lucide-react";
-import { Feature } from "./tabs/feature/Feature";
+import { Feature } from "@/components/dashboard/tabs/feature/Feature";
 import { Stack } from "@/components/dashboard/tabs/stack/Stack"; // Import the new Stack component
+import { Roadmap } from "@/components/dashboard/tabs/roadmap/Roadmap";
 
 export function DashboardLayout() {
 	const [sidebarExpanded, setSidebarExpanded] = useState(true);
@@ -180,13 +181,8 @@ export function DashboardLayout() {
 						{/* Render appropriate tab content based on activeTab state */}
 						{activeTab === "features" && <Feature />}
 						{activeTab === "stack" && <Stack />}
-						{activeTab === "roadmap" && (
-							<div className="flex items-center justify-center h-full">
-								<p className="text-gray-500">
-									Roadmap tab content coming soon!
-								</p>
-							</div>
-						)}
+						{activeTab === "roadmap" && <Roadmap />}
+
 						{activeTab === "summary" && (
 							<div className="flex items-center justify-center h-full">
 								<p className="text-gray-500">

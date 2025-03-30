@@ -13,6 +13,13 @@ import {
 } from "lucide-react";
 import { sampleRoadmapData, Milestone, Task } from "./Sample";
 
+const storedData = localStorage.getItem("generation");
+
+const roadmapData = storedData ? JSON.parse(storedData)?.Roadmap ?? sampleRoadmapData : sampleRoadmapData;
+
+
+console.log(roadmapData)
+
 // Define milestone columns
 const columns = [
   { id: "milestone1", name: "Milestone 1" },
@@ -157,13 +164,13 @@ export function Roadmap() {
         <div className="flex justify-between items-center mb-3">
           <div>
             <h1 className="text-xl font-bold text-gray-800">
-              {sampleRoadmapData.projectName}
+              {roadmapData.projectName}
             </h1>
             <div className="flex items-center gap-3 text-sm text-gray-600 mt-1">
-              <p>{sampleRoadmapData.projectDescription}</p>
+              <p>{roadmapData.projectDescription}</p>
               <span className="text-xs px-2 py-0.5 bg-gray-100 rounded-full flex items-center gap-1">
                 <Calendar size={12} />
-                <span>Started: {new Date(sampleRoadmapData.startDate).toLocaleDateString()}</span>
+                <span>Started: {new Date(roadmapData.startDate).toLocaleDateString()}</span>
               </span>
             </div>
           </div>
@@ -188,7 +195,7 @@ export function Roadmap() {
       {/* Milestone board */}
       <div className="flex-1 overflow-hidden flex p-4 space-x-4 bg-gray-50">
         {columns.map((column) => {
-          const milestones = filterMilestones(sampleRoadmapData.milestones[column.id as keyof typeof sampleRoadmapData.milestones] || []);
+          const milestones = filterMilestones(roadmapData.milestones[column.id as keyof typeof roadmapData.milestones] || []);
           const columnTotalTime = calculateColumnTotalTime(milestones);
           
           return (
@@ -267,9 +274,9 @@ export function Roadmap() {
                                     {milestone.dependencies.map((depId) => {
                                       // Find the dependency milestone across all columns
                                       let dep: Milestone | undefined;
-                                      for (const colKey in sampleRoadmapData.milestones) {
-                                        const colMilestones = sampleRoadmapData.milestones[colKey as keyof typeof sampleRoadmapData.milestones];
-                                        dep = colMilestones.find(m => m.id === depId);
+                                      for (const colKey in roadmapData.milestones) {
+                                        const colMilestones = roadmapData.milestones[colKey as keyof typeof roadmapData.milestones];
+                                        dep = colMilestones.find((m: Milestone) => m.id === depId);
                                         if (dep) break;
                                       }
                                       

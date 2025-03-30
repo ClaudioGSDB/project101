@@ -1,5 +1,7 @@
 import { NextResponse } from 'next/server';
 import { chat } from '@/lib/gemini/config';
+import { jsonrepair } from 'jsonrepair';
+
 
 export async function POST(req: Request) {
   try{
@@ -10,9 +12,29 @@ export async function POST(req: Request) {
     
     const result = await chat.sendMessage(JSON.stringify(formData));
 
-    console.log(result.response.text());
+    const responseText = result.response.text();
 
-    return NextResponse.json(result.response.text(), { status: 200 });
+    let validResponse;
+    try {
+      JSON.parse(responseText);
+      validResponse = responseText;
+      console.log("Response is valid JSON");
+    } catch (jsonError) {
+      console.log("Invalid JSON received, attempting to repair...");
+      try {
+        const repairedJson = jsonrepair(responseText);
+        JSON.parse(repairedJson);
+        validResponse = repairedJson;
+        console.log("JSON successfully repaired");
+      } catch (repairError) {
+        console.error("Failed to repair JSON:", repairError);
+        throw new Error("Unable to process response: Invalid JSON format");
+      }
+    }
+
+    console.log(validResponse)
+
+    return NextResponse.json(validResponse, { status: 200 });
   } catch (error) {
     console.log(error);
     return NextResponse.json({error: error}, { status: 400 });

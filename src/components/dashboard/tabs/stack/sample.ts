@@ -1,5 +1,5 @@
 // src/components/dashboard/tabs/stack/sample.ts
-export const stackData = {
+export const sampleData = {
 	projectType: "Web Application",
 	description:
 		"A full-stack web application for project idea generation and management.",
@@ -322,26 +322,30 @@ export const stackData = {
 export interface TechStackResponse {
 	projectType: string;
 	description: string;
-	categories: {
-		id: string;
+	categories: Category[];
+}
+
+export interface Category {
+	id: string;
+	name: string;
+	description: string;
+	color: string;
+	technologies: Technology[];
+}
+
+export interface Technology {
+	id: string;
+	name: string;
+	description: string;
+	url?: string;
+	projectRelevance: string;
+	differentiators: string[];
+	learningResources: {
 		name: string;
-		description: string;
-		color: string;
-		technologies: {
-			id: string;
-			name: string;
-			description: string;
-			url?: string;
-			projectRelevance: string;
-			differentiators: string[];
-			learningResources: {
-				name: string;
-				url: string;
-			}[];
-			alternatives: {
-				name: string;
-				reason?: string;
-			}[];
-		}[];
+		url: string;
+	}[];
+	alternatives: {
+		name: string;
+		reason?: string;
 	}[];
 }

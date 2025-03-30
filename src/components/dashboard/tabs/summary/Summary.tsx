@@ -16,7 +16,7 @@ import {
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { sampleRoadmapData } from "../roadmap/Sample";
-import { stackData } from "../stack/sample";
+import { sampleData } from "../stack/sample";
 import { sampleData as featureData } from "../feature/sampleData";
 
 export function Summary() {
@@ -28,7 +28,7 @@ export function Summary() {
 		0
 	);
 
-	const technologiesCount = stackData.categories.reduce(
+	const technologiesCount = sampleData.categories.reduce(
 		(total, category) => total + category.technologies.length,
 		0
 	);
@@ -90,7 +90,7 @@ export function Summary() {
 
 	// Get core technologies (first from each category for simplicity)
 	const getCoreStack = () => {
-		return stackData.categories.map((category) => ({
+		return sampleData.categories.map((category) => ({
 			category: category.name,
 			technology: category.technologies[0], // Get first technology in each category
 			color: category.color,

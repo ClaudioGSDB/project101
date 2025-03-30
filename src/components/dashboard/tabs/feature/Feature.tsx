@@ -262,7 +262,7 @@ export function Feature() {
 						<FeatureDetail
 							feature={selectedFeature.feature}
 							category={selectedFeature.category}
-							allCategories={sampleData.categories}
+							allCategories={featureData.categories}
 							onClose={handleCloseDetail}
 							onHighlightRelated={handleHighlightRelated}
 						/>

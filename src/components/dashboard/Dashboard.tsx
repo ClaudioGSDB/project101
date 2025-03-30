@@ -14,8 +14,9 @@ import {
 	FileText, // New icon for Summary
 } from "lucide-react";
 import { Feature } from "@/components/dashboard/tabs/feature/Feature";
-import { Stack } from "@/components/dashboard/tabs/stack/Stack"; // Import the new Stack component
+import { Stack } from "@/components/dashboard/tabs/stack/Stack";
 import { Roadmap } from "@/components/dashboard/tabs/roadmap/Roadmap";
+import { Summary } from "@/components/dashboard/tabs/summary/Summary";
 
 export function DashboardLayout() {
 	const [sidebarExpanded, setSidebarExpanded] = useState(true);
@@ -182,14 +183,7 @@ export function DashboardLayout() {
 						{activeTab === "features" && <Feature />}
 						{activeTab === "stack" && <Stack />}
 						{activeTab === "roadmap" && <Roadmap />}
-
-						{activeTab === "summary" && (
-							<div className="flex items-center justify-center h-full">
-								<p className="text-gray-500">
-									Summary tab content coming soon!
-								</p>
-							</div>
-						)}
+						{activeTab === "summary" && <Summary />}
 					</div>
 				</main>
 			</div>

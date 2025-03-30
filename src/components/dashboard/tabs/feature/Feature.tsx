@@ -5,6 +5,14 @@ import { FeatureCard } from "./featureCard/FeatureCard";
 import { FeatureDetail } from "./featureDetail/FeatureDetail";
 import { sampleData, AIFeature, AICategory } from "./sampleData";
 
+const storedData = localStorage.getItem("generation");
+
+const featureData = storedData ? JSON.parse(storedData)?.Feature ?? sampleData : sampleData;
+
+
+console.log(featureData)
+
+
 export function Feature() {
 	// State for managing expanded categories
 	const [expandedCategories, setExpandedCategories] = useState<string[]>([]);
@@ -23,8 +31,8 @@ export function Feature() {
 
 	// Initialize with first category expanded
 	useEffect(() => {
-		if (sampleData.categories.length > 0) {
-			setExpandedCategories([sampleData.categories[0].category_id]);
+		if (featureData.categories.length > 0) {
+			setExpandedCategories([featureData.categories[0].category_id]);
 		}
 	}, []);
 
@@ -57,8 +65,8 @@ export function Feature() {
 		// Make sure categories containing related features are expanded
 		const categoriesToExpand: string[] = [];
 
-		sampleData.categories.forEach((category) => {
-			category.features.forEach((feature) => {
+		featureData.categories.forEach((category: AICategory) => {
+			category.features.forEach((feature: AIFeature) => {
 				if (
 					featureIds.includes(feature.feature_id) &&
 					!expandedCategories.includes(category.category_id)
@@ -75,11 +83,11 @@ export function Feature() {
 
 	// Filter categories and features based on search
 	const filteredCategories = searchQuery
-		? sampleData.categories
-				.map((category) => ({
+		? featureData.categories
+				.map((category: AICategory) => ({
 					...category,
 					features: category.features.filter(
-						(feature) =>
+						(feature: AIFeature) =>
 							feature.feature_name
 								.toLowerCase()
 								.includes(searchQuery.toLowerCase()) ||
@@ -91,8 +99,8 @@ export function Feature() {
 							)
 					),
 				}))
-				.filter((category) => category.features.length > 0)
-		: sampleData.categories;
+				.filter((category: AICategory) => category.features.length > 0)
+		: featureData.categories;
 
 	return (
 		<div className="h-full flex flex-col">
@@ -101,10 +109,10 @@ export function Feature() {
 				<div className="flex justify-between items-center mb-3">
 					<div>
 						<h1 className="text-xl font-bold text-gray-800">
-							{sampleData.project_name}
+							{featureData.project_name}
 						</h1>
 						<p className="text-sm text-gray-600 mt-1">
-							{sampleData.project_description}
+							{featureData.project_description}
 						</p>
 					</div>
 					<button className="px-4 py-2 bg-indigo-500 text-white rounded-lg hover:bg-indigo-600 flex items-center gap-2">
@@ -137,7 +145,7 @@ export function Feature() {
 					} overflow-y-auto bg-gray-50`}
 				>
 					<div className="p-4">
-						{filteredCategories.map((category) => (
+						{filteredCategories.map((category: AICategory) => (
 							<div key={category.category_id} className="mb-4">
 								{/* Category header */}
 								<div

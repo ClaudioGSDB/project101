@@ -103,7 +103,8 @@ export default function ProjectForm() {
 
             const data = await response.json();
 
-            console.log("Gpt Response: ", JSON.stringify(data, null, 4));
+			localStorage.setItem("generation", data);
+            console.log("Gpt Response: ", data);
 
         } catch (error){
             console.error(error);

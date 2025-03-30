@@ -12,10 +12,9 @@ export async function POST(req: Request) {
 
     console.log(result.response.text());
 
-    console.log(chat._history);
-
-    return NextResponse.json({message: JSON.parse(result.response.text())}, { status: 200 });
+    return NextResponse.json(result.response.text(), { status: 200 });
   } catch (error) {
+    console.log(error);
     return NextResponse.json({error: error}, { status: 400 });
   }
 }

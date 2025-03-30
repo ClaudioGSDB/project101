@@ -13,8 +13,14 @@ import {
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import StackVisual from "./StackVisual";
-import { stackData } from "./sample";
+import { sampleData, TechStackResponse, Category, Technology } from "./sample";
 import { motion, AnimatePresence } from "framer-motion";
+
+const storedData = localStorage.getItem("generation");
+
+const stackData = storedData ? JSON.parse(storedData)?.Stack ?? sampleData : sampleData;
+
+console.log(stackData, sampleData)
 
 export function Stack() {
 	const [viewMode, setViewMode] = useState<"list" | "visual">("list");
@@ -22,7 +28,7 @@ export function Stack() {
 	const [activeTech, setActiveTech] = useState<string | null>(null);
 
 	// Get current category
-	const currentCategory = stackData.categories.find((cat) => cat.id === activeCategory);
+	const currentCategory = stackData.categories.find((cat: Category) => cat.id === activeCategory);
 
 	// Get color classes for the current category
 	const getCategoryColorClasses = (colorClass: string) => {
@@ -120,7 +126,7 @@ export function Stack() {
 					{/* Category Tabs */}
 					<div className="px-5 py-3 bg-gray-50 border-b overflow-x-auto hide-scrollbar">
 						<div className="flex space-x-2">
-							{stackData.categories.map((category) => {
+							{stackData.categories.map((category: Category) => {
 								const isActive = activeCategory === category.id;
 								const { textColor, bgColor, borderColor } =
 									getCategoryColorClasses(category.color);
@@ -179,7 +185,7 @@ export function Stack() {
 					<div className="flex-1 flex overflow-hidden">
 						{/* Left column: Technology list */}
 						<div className="w-1/3 border-r bg-gray-50 overflow-y-auto p-3 space-y-2">
-							{currentCategory?.technologies.map((tech) => {
+							{currentCategory?.technologies.map((tech: Technology) => {
 								const isActive = activeTech === tech.id;
 								const { bgColor, textColor } = currentColors;
 
@@ -221,7 +227,7 @@ export function Stack() {
 									<TechnologyDetail
 										key={activeTech}
 										technology={currentCategory?.technologies.find(
-											(t) => t.id === activeTech
+											(t: Technology) => t.id === activeTech
 										)}
 										categoryColors={currentColors}
 									/>

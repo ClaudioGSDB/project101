@@ -1,8 +1,14 @@
 // src/components/dashboard/tabs/stack/StackVisual.tsx
 "use client";
 import React, { useState, useEffect, useRef } from "react";
-import { stackData } from "./sample";
+import { Category, sampleData } from "./sample";
 import { motion, AnimatePresence } from "framer-motion";
+
+const storedData = localStorage.getItem("generation");
+
+const stackData = storedData ? JSON.parse(storedData)?.Stack ?? sampleData : sampleData;
+
+console.log(stackData, stackData)
 
 // Map gradients to explicit hex colors for consistent rendering
 const gradientColorMap: Record<string, string> = {
@@ -21,7 +27,7 @@ const getColorFromGradient = (gradient: string): string => {
 
 // Calculate the total number of technologies
 const getTotalTechCount = () => {
-	return stackData.categories.reduce((acc, category) => {
+	return stackData.categories.reduce((acc: number, category: Category) => {
 		return acc + category.technologies.length;
 	}, 0);
 };
@@ -69,7 +75,7 @@ const StackVisual = () => {
 		const techCount = getTotalTechCount();
 
 		// Distribute categories around the circle
-		categories.forEach((category, categoryIndex) => {
+		categories.forEach((category: Category, categoryIndex: number) => {
 			const color = getColorFromGradient(category.color);
 			const categoryAngle = (2 * Math.PI * categoryIndex) / categories.length;
 			const categoryTechCount = category.technologies.length;
@@ -383,7 +389,7 @@ const StackVisual = () => {
 
 			{/* Category legend */}
 			<div className="absolute bottom-4 left-4 right-4 bg-white/30 backdrop-blur-sm p-3 rounded-lg z-30 flex flex-wrap justify-center gap-3">
-				{stackData.categories.map((category) => {
+				{stackData.categories.map((category: Category) => {
 					const color = getColorFromGradient(category.color);
 					return (
 						<div

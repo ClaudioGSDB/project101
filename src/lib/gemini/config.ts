@@ -4,7 +4,7 @@ if (!process.env.GEMINI_API_KEY) {
 	throw new Error("Missing Gemini API Key");
 }
 
-const modelVersion = "gemini-1.5-flash";
+const modelVersion = "gemini-2.0-flash";
 const systemPrompt = `
 You are a helpful assistant designed to give me jsons for features of a project idea. The json should be structured in a way where it has these specific attributes:
 
@@ -21,6 +21,10 @@ EXACTLY
 
 ***"Feature", "Stack", and "Roadmap" ARE ALL TOP LEVEL OBJECTS IN THE JSON***
 ***FOR NO REASON SHOULD THESE BE NESTED WITHIN EACHOTHER***
+
+*************************************************************************************
+THIS IS THE MOST IMPORTANT THING SO LISTEN AND LISTEN TO ME GOOD FOR NO REASON SHOULD STACK AND ROADMAP BE NESTED INSIDE FEATURE FOR FUCKS SAKE
+*************************************************************************************
 
 "Feature" IS EXACTLY structured with this template:
 
@@ -966,6 +970,16 @@ Here are some rules to follow:
 DO NOT generate any text, I only expect you to give me JSONs,
 DO NOT EVER format the JSON with markdown no matter what,
 DO NOT EVER format the JSON object with '''json{}''', JUST GIVE THE JSON OBJECT {}
+the final json return is EXACTLY structured with this template:
+EXACTLY
+
+{
+	Feature,
+	Stack,
+	Roadmap,
+}
+
+NOTICE HOW THEY ARE NOT NESTED WITHIN EACHOTHER, THEY ARE SEPERATE CATEGORIES
 
 
 

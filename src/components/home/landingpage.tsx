@@ -53,12 +53,6 @@ export default function LandingPage() {
           <h1 className="text-[12vw] md:text-[15rem] font-extrabold text-transparent bg-clip-text bg-gradient-to-r from-indigo-600 to-blue-600 tracking-tighter text-center">
             Project101
           </h1>
-          <div className="w-64 h-64">
-            <Lottie 
-              animationData={rocketAnimation} 
-              loop={true} 
-            />
-          </div>
         </div>
 
         {/* Scroll Down Button */}
@@ -66,7 +60,7 @@ export default function LandingPage() {
           <Button 
             variant="outline" 
             size="icon" 
-            className="animate-bounce bg-white/20 backdrop-blur-sm border-white/30 hover:bg-white/30"
+            className="animate-bounce bg-white/20 backdrop-blur-sm border-indigo-300 hover:bg-white/30"
             onClick={scrollToContent}
           >
             <ChevronDown className="h-6 w-6 text-indigo-500" />

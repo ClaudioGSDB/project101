@@ -4,11 +4,13 @@ import React, { useState, useEffect, useRef } from "react";
 import { Category, sampleData } from "./sample";
 import { motion, AnimatePresence } from "framer-motion";
 
-const storedData = localStorage.getItem("generation");
+// Get stack data from localStorage - ensure both components use the same data
+const storedStackData = localStorage.getItem("Stack");
+const stackData = storedStackData
+	? JSON.parse(storedStackData) ?? sampleData
+	: sampleData;
 
-const stackData = storedData ? JSON.parse(storedData)?.Stack ?? sampleData : sampleData;
-
-console.log(stackData, stackData)
+console.log("Stack visual data:", stackData);
 
 // Map gradients to explicit hex colors for consistent rendering
 const gradientColorMap: Record<string, string> = {

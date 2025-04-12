@@ -1,3 +1,4 @@
+//Feature.tsx
 "use client";
 import React, { useState, useEffect } from "react";
 import { Search, Plus, ChevronDown, ChevronUp } from "lucide-react";
@@ -5,13 +6,13 @@ import { FeatureCard } from "./featureCard/FeatureCard";
 import { FeatureDetail } from "./featureDetail/FeatureDetail";
 import { sampleData, AIFeature, AICategory } from "./sampleData";
 
-const storedData = localStorage.getItem("generation");
+// Get feature data from localStorage
+const storedFeatureData = localStorage.getItem("Features");
+const featureData = storedFeatureData
+	? JSON.parse(storedFeatureData) ?? sampleData
+	: sampleData;
 
-const featureData = storedData ? JSON.parse(storedData)?.Feature ?? sampleData : sampleData;
-
-
-console.log(featureData)
-
+console.log("Feature data:", featureData);
 
 export function Feature() {
 	// State for managing expanded categories

@@ -1,6 +1,6 @@
 // src/components/dashboard/tabs/summary/Summary.tsx
 "use client";
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import {
 	Download,
 	ExternalLink,

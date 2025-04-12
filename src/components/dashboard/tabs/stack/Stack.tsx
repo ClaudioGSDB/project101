@@ -16,11 +16,13 @@ import StackVisual from "./StackVisual";
 import { sampleData, TechStackResponse, Category, Technology } from "./sample";
 import { motion, AnimatePresence } from "framer-motion";
 
-const storedData = localStorage.getItem("generation");
+// Get stack data from localStorage
+const storedStackData = localStorage.getItem("Stack");
+const stackData = storedStackData
+	? JSON.parse(storedStackData) ?? sampleData
+	: sampleData;
 
-const stackData = storedData ? JSON.parse(storedData)?.Stack ?? sampleData : sampleData;
-
-console.log(stackData, sampleData)
+console.log("Stack data:", stackData);
 
 export function Stack() {
 	const [viewMode, setViewMode] = useState<"list" | "visual">("list");
@@ -28,7 +30,9 @@ export function Stack() {
 	const [activeTech, setActiveTech] = useState<string | null>(null);
 
 	// Get current category
-	const currentCategory = stackData.categories.find((cat: Category) => cat.id === activeCategory);
+	const currentCategory = stackData.categories.find(
+		(cat: Category) => cat.id === activeCategory
+	);
 
 	// Get color classes for the current category
 	const getCategoryColorClasses = (colorClass: string) => {

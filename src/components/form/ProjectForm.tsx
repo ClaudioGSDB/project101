@@ -37,8 +37,7 @@ const sections: Section[] = [
 	},
 	{
 		title: "Interests & Preferences",
-		description:
-			"Tell us about the areas of technology that interest you most.",
+		description: "Tell us about the areas of technology that interest you most.",
 		type: "interests",
 	},
 	{
@@ -49,8 +48,7 @@ const sections: Section[] = [
 	},
 	{
 		title: "Additional Context",
-		description:
-			"Any other information that might help us suggest better projects.",
+		description: "Any other information that might help us suggest better projects.",
 		type: "additional",
 	},
 ];
@@ -66,50 +64,79 @@ export default function ProjectForm() {
 	const renderSectionContent = () => {
 		switch (sections[currentSection].type) {
 			case "background":
-				return (
-					<Experience formData={formData} setFormData={setFormData} />
-				);
+				return <Experience formData={formData} setFormData={setFormData} />;
 			case "goals":
 				return <Goal formData={formData} setFormData={setFormData} />;
 			case "interests":
-				return (
-					<Interests formData={formData} setFormData={setFormData} />
-				);
+				return <Interests formData={formData} setFormData={setFormData} />;
 			case "practical":
-				return (
-					<Practical formData={formData} setFormData={setFormData} />
-				);
+				return <Practical formData={formData} setFormData={setFormData} />;
 			case "additional":
-				return (
-					<Additional formData={formData} setFormData={setFormData} />
-				);
+				return <Additional formData={formData} setFormData={setFormData} />;
 			default:
 				return null;
 		}
 	};
 
-	async function sendPrompt(){
-        try {
+	async function sendPrompt() {
+		try {
+			// Step 1: Generate Features
+			const featureResponse = await fetch("/api/gemini", {
+				method: "POST",
+				headers: {
+					"Content-Type": "application/json",
+				},
+				body: JSON.stringify({
+					formData: formData,
+					generationType: "Feature",
+				}),
+			});
 
-            const response = await fetch('/api/gemini', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                },
-                body: JSON.stringify({
-                    'formData': formData
-                })
-            });
+			const featureData = await featureResponse.json();
+			localStorage.setItem("Features", JSON.stringify(featureData.message));
+			console.log("Feature Response:", featureData.message);
 
-            const data = await response.json();
+			// Step 2: Generate Stack (passing feature context)
+			const stackResponse = await fetch("/api/gemini", {
+				method: "POST",
+				headers: {
+					"Content-Type": "application/json",
+				},
+				body: JSON.stringify({
+					formData: formData,
+					featureContext: featureData.message,
+					generationType: "Stack",
+				}),
+			});
 
-			localStorage.setItem("generation", data);
-            console.log("Gpt Response: ", data);
+			const stackData = await stackResponse.json();
+			localStorage.setItem("Stack", JSON.stringify(stackData.message));
+			console.log("Stack Response:", stackData.message);
 
-        } catch (error){
-            console.error(error);
-        }
-    }
+			// Step 3: Generate Roadmap (passing feature and stack context)
+			const roadmapResponse = await fetch("/api/gemini", {
+				method: "POST",
+				headers: {
+					"Content-Type": "application/json",
+				},
+				body: JSON.stringify({
+					formData: formData,
+					featureContext: featureData.message,
+					stackContext: stackData.message,
+					generationType: "Roadmap",
+				}),
+			});
+
+			const roadmapData = await roadmapResponse.json();
+			localStorage.setItem("Roadmap", JSON.stringify(roadmapData.message));
+			console.log("Roadmap Response:", roadmapData.message);
+
+			// Optional: Store a flag indicating all data has been generated
+			localStorage.setItem("generationComplete", "true");
+		} catch (error) {
+			console.error("Error generating project:", error);
+		}
+	}
 
 	// Rest of your component remains the same
 	return (
@@ -120,10 +147,7 @@ export default function ProjectForm() {
 				{/* Progress indicator */}
 				<div className="absolute -left-64 top-1/2 -translate-y-1/2 flex flex-col items-center gap-4">
 					{sections.map((section, index) => (
-						<div
-							key={index}
-							className="relative flex justify-center w-full"
-						>
+						<div key={index} className="relative flex justify-center w-full">
 							{/* Connecting line */}
 							{index < sections.length - 1 && (
 								<div className="absolute top-full left-1/2 h-4 w-0.5 bg-gray-200">
@@ -173,33 +197,25 @@ export default function ProjectForm() {
 						<Button
 							variant="outline"
 							disabled={currentSection === 0}
-							onClick={() =>
-								setCurrentSection(currentSection - 1)
-							}
+							onClick={() => setCurrentSection(currentSection - 1)}
 						>
 							Back
 						</Button>
-						{
-							currentSection !== sections.length - 1 ? 
-								<Button
-									className="bg-gradient-to-r from-indigo-500 to-blue-500 hover:from-indigo-600 hover:to-blue-600 hover:scale-105 transition-transform duration-300"
-									onClick={() =>
-										setCurrentSection(currentSection + 1)
-									}
-								>
-									Next
-								</Button>
-							:
-								<Button
+						{currentSection !== sections.length - 1 ? (
+							<Button
 								className="bg-gradient-to-r from-indigo-500 to-blue-500 hover:from-indigo-600 hover:to-blue-600 hover:scale-105 transition-transform duration-300"
-								onClick={() =>
-									sendPrompt()
-								}
-								>
-									Submit
-								</Button>
-						}
-						
+								onClick={() => setCurrentSection(currentSection + 1)}
+							>
+								Next
+							</Button>
+						) : (
+							<Button
+								className="bg-gradient-to-r from-indigo-500 to-blue-500 hover:from-indigo-600 hover:to-blue-600 hover:scale-105 transition-transform duration-300"
+								onClick={() => sendPrompt()}
+							>
+								Submit
+							</Button>
+						)}
 					</CardFooter>
 				</Card>
 			</div>

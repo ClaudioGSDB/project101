@@ -14,7 +14,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
 		<html lang="en">
 			<body>
 				<AuthProvider>
-					<Navbar /> {/* Add Navbar here so it's present on all pages */}
+					{/* <Navbar /> Add Navbar here so it's present on all pages */}
 					{children}
 				</AuthProvider>
 			</body>

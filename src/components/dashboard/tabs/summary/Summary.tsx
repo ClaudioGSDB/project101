@@ -15,46 +15,84 @@ import {
 } from "lucide-react";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { sampleRoadmapData } from "../roadmap/Sample";
-import { sampleData } from "../stack/sample";
-import { sampleData as featureData } from "../feature/sampleData";
+import { sampleRoadmapData as sampleRoadmapData } from "../roadmap/Sample";
+import { sampleData as stackSampleData } from "../stack/sample";
+import { sampleData as featureSampleData } from "../feature/sampleData";
 
 export function Summary() {
 	const [activeExportOption, setActiveExportOption] = useState<string | null>(null);
+	const [featureData, setFeatureData] = useState(featureSampleData);
+	const [stackData, setStackData] = useState(stackSampleData);
+	const [roadmapData, setRoadmapData] = useState(sampleRoadmapData);
 
-	// Calculate metrics from other tabs
-	const featuresCount = featureData.categories.reduce(
-		(total, category) => total + category.features.length,
-		0
-	);
+	// Load data from localStorage on component mount
+	useEffect(() => {
+		try {
+			// Load Feature data
+			const storedFeatures = localStorage.getItem("Features");
+			if (storedFeatures) {
+				const parsedFeatures = JSON.parse(storedFeatures);
+				if (parsedFeatures) setFeatureData(parsedFeatures);
+			}
 
-	const technologiesCount = sampleData.categories.reduce(
-		(total, category) => total + category.technologies.length,
-		0
-	);
+			// Load Stack data
+			const storedStack = localStorage.getItem("Stack");
+			if (storedStack) {
+				const parsedStack = JSON.parse(storedStack);
+				if (parsedStack) setStackData(parsedStack);
+			}
+
+			// Load Roadmap data
+			const storedRoadmap = localStorage.getItem("Roadmap");
+			if (storedRoadmap) {
+				const parsedRoadmap = JSON.parse(storedRoadmap);
+				if (parsedRoadmap) setRoadmapData(parsedRoadmap);
+			}
+		} catch (error) {
+			console.error("Error loading data from localStorage:", error);
+		}
+	}, []);
+
+	// Calculate metrics from loaded data
+	const featuresCount =
+		featureData.categories?.reduce(
+			(total, category) => total + (category.features?.length || 0),
+			0
+		) || 0;
+
+	const technologiesCount =
+		stackData.categories?.reduce(
+			(total, category) => total + (category.technologies?.length || 0),
+			0
+		) || 0;
 
 	const calculateTotalEstimate = () => {
-		// Get all milestones
+		// Get all milestones or empty arrays if not available
+		const milestone1 = roadmapData.milestones?.milestone1 || [];
+		const milestone2 = roadmapData.milestones?.milestone2 || [];
+		const milestone3 = roadmapData.milestones?.milestone3 || [];
+		const milestone4 = roadmapData.milestones?.milestone4 || [];
+
 		const allMilestones = [
-			...sampleRoadmapData.milestones.milestone1,
-			...sampleRoadmapData.milestones.milestone2,
-			...sampleRoadmapData.milestones.milestone3,
-			...sampleRoadmapData.milestones.milestone4,
+			...milestone1,
+			...milestone2,
+			...milestone3,
+			...milestone4,
 		];
 
 		// Sum up all task times in days
 		let totalDays = 0;
 		allMilestones.forEach((milestone) => {
-			milestone.tasks.forEach((task) => {
-				switch (task.estimatedTime.unit) {
+			milestone.tasks?.forEach((task) => {
+				switch (task.estimatedTime?.unit) {
 					case "days":
-						totalDays += task.estimatedTime.value;
+						totalDays += task.estimatedTime.value || 0;
 						break;
 					case "weeks":
-						totalDays += task.estimatedTime.value * 7;
+						totalDays += (task.estimatedTime.value || 0) * 7;
 						break;
 					case "months":
-						totalDays += task.estimatedTime.value * 30; // approximate
+						totalDays += (task.estimatedTime.value || 0) * 30; // approximate
 						break;
 				}
 			});
@@ -74,8 +112,8 @@ export function Summary() {
 	const getHighPriorityFeatures = () => {
 		const highPriorityFeatures: Array<{ feature: any; category: any }> = [];
 
-		featureData.categories.forEach((category) => {
-			category.features.forEach((feature) => {
+		featureData.categories?.forEach((category) => {
+			category.features?.forEach((feature) => {
 				if (feature.user_value === "high") {
 					highPriorityFeatures.push({
 						feature,
@@ -90,21 +128,23 @@ export function Summary() {
 
 	// Get core technologies (first from each category for simplicity)
 	const getCoreStack = () => {
-		return sampleData.categories.map((category) => ({
-			category: category.name,
-			technology: category.technologies[0], // Get first technology in each category
-			color: category.color,
-		}));
+		return (
+			stackData.categories?.map((category) => ({
+				category: category.name,
+				technology: category.technologies?.[0], // Get first technology in each category
+				color: category.color,
+			})) || []
+		);
 	};
 
 	// Get key milestones (first from each phase)
 	const getKeyMilestones = () => {
 		return [
-			sampleRoadmapData.milestones.milestone1[0],
-			sampleRoadmapData.milestones.milestone2[0],
-			sampleRoadmapData.milestones.milestone3[0],
-			sampleRoadmapData.milestones.milestone4[0],
-		];
+			roadmapData.milestones?.milestone1?.[0],
+			roadmapData.milestones?.milestone2?.[0],
+			roadmapData.milestones?.milestone3?.[0],
+			roadmapData.milestones?.milestone4?.[0],
+		].filter(Boolean); // Filter out undefined entries
 	};
 
 	return (
@@ -114,10 +154,10 @@ export function Summary() {
 				<div className="flex justify-between items-start">
 					<div>
 						<h1 className="text-2xl font-bold text-gray-800">
-							{featureData.project_name}
+							{featureData.project_name || "Project Summary"}
 						</h1>
 						<p className="text-gray-600 mt-1">
-							{featureData.project_description}
+							{featureData.project_description || "Your project overview"}
 						</p>
 					</div>
 					<div className="flex gap-2">
@@ -357,62 +397,76 @@ export function Summary() {
 
 							{/* Timeline items */}
 							<div className="space-y-8 ml-6">
-								{getKeyMilestones().map((milestone, index) => (
-									<div key={milestone.id} className="relative">
-										{/* Timeline dot */}
+								{getKeyMilestones().length > 0 ? (
+									getKeyMilestones().map((milestone, index) => (
 										<div
-											className={`absolute -left-9 w-4 h-4 rounded-full border-2 border-white
-                      ${
-							milestone.priority === "critical"
-								? "bg-red-500"
-								: milestone.priority === "high"
-								? "bg-amber-500"
-								: milestone.priority === "medium"
-								? "bg-blue-500"
-								: "bg-green-500"
-						}
-                    `}
-										></div>
+											key={milestone.id || index}
+											className="relative"
+										>
+											{/* Timeline dot */}
+											<div
+												className={`absolute -left-9 w-4 h-4 rounded-full border-2 border-white
+											${
+												milestone.priority === "critical"
+													? "bg-red-500"
+													: milestone.priority === "high"
+													? "bg-amber-500"
+													: milestone.priority === "medium"
+													? "bg-blue-500"
+													: "bg-green-500"
+											}
+											`}
+											></div>
 
-										<div>
-											<h3 className="font-medium text-gray-800">
-												Phase {index + 1}: {milestone.title}
-											</h3>
+											<div>
+												<h3 className="font-medium text-gray-800">
+													Phase {index + 1}: {milestone.title}
+												</h3>
 
-											<div className="mt-1 flex flex-wrap gap-2">
-												<span className="text-xs px-2 py-1 bg-gray-100 rounded-full text-gray-600 flex items-center">
-													<Clock className="w-3 h-3 mr-1" />
-													{milestone.tasks.length} Tasks
-												</span>
+												<div className="mt-1 flex flex-wrap gap-2">
+													<span className="text-xs px-2 py-1 bg-gray-100 rounded-full text-gray-600 flex items-center">
+														<Clock className="w-3 h-3 mr-1" />
+														{milestone.tasks?.length ||
+															0}{" "}
+														Tasks
+													</span>
 
-												<span
-													className={`text-xs px-2 py-1 rounded-full flex items-center
-                          ${
-								milestone.priority === "critical"
-									? "bg-red-100 text-red-800"
-									: milestone.priority === "high"
-									? "bg-amber-100 text-amber-800"
-									: milestone.priority === "medium"
-									? "bg-blue-100 text-blue-800"
-									: "bg-green-100 text-green-800"
-							}
-                        `}
-												>
-													Priority: {milestone.priority}
-												</span>
+													<span
+														className={`text-xs px-2 py-1 rounded-full flex items-center
+													${
+														milestone.priority === "critical"
+															? "bg-red-100 text-red-800"
+															: milestone.priority ===
+															  "high"
+															? "bg-amber-100 text-amber-800"
+															: milestone.priority ===
+															  "medium"
+															? "bg-blue-100 text-blue-800"
+															: "bg-green-100 text-green-800"
+													}
+													`}
+													>
+														Priority: {milestone.priority}
+													</span>
+												</div>
+
+												<p className="text-sm text-gray-600 mt-2">
+													{milestone.description &&
+													milestone.description.length > 120
+														? `${milestone.description.substring(
+																0,
+																120
+														  )}...`
+														: milestone.description}
+												</p>
 											</div>
-
-											<p className="text-sm text-gray-600 mt-2">
-												{milestone.description.length > 120
-													? `${milestone.description.substring(
-															0,
-															120
-													  )}...`
-													: milestone.description}
-											</p>
 										</div>
+									))
+								) : (
+									<div className="p-6 text-center text-gray-500">
+										No timeline data found
 									</div>
-								))}
+								)}
 							</div>
 						</div>
 
@@ -420,6 +474,7 @@ export function Summary() {
 							<Button
 								variant="outline"
 								className="text-indigo-600 border-indigo-200 hover:bg-indigo-50"
+								onClick={() => (window.location.href = "/dashboard")}
 							>
 								View Detailed Roadmap{" "}
 								<ChevronRight className="w-4 h-4 ml-1" />

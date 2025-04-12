@@ -1,6 +1,6 @@
 // src/components/dashboard/Dashboard.tsx (Updated)
 "use client";
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import {
 	MessageSquare,
 	ChevronLeft,
@@ -20,15 +20,24 @@ import { Summary } from "@/components/dashboard/tabs/summary/Summary";
 
 export function DashboardLayout() {
 	const [sidebarExpanded, setSidebarExpanded] = useState(true);
-	const [activeTab, setActiveTab] = useState("features");
+	const [activeTab, setActiveTab] = useState("summary");
 	const [assistantExpanded, setAssistantExpanded] = useState(false);
+	const [projectName, setProjectName] = useState("My Awesome Project");
+
+	useEffect(() => {
+		// Load project name from localStorage if available
+		const storedProjectName = JSON.parse(localStorage.getItem("Features") || "{}");
+		if (storedProjectName.project_name) {
+			setProjectName(storedProjectName.project_name);
+		}
+	}, []);
 
 	// Define tab icons and labels for more organized code
 	const tabs = [
+		{ id: "summary", label: "Summary", icon: FileText },
 		{ id: "features", label: "Features", icon: Layers },
 		{ id: "stack", label: "Stack", icon: Server },
 		{ id: "roadmap", label: "Roadmap", icon: Route },
-		{ id: "summary", label: "Summary", icon: FileText },
 	];
 
 	return (
@@ -162,11 +171,8 @@ export function DashboardLayout() {
 				<header className="h-14 bg-white border-b px-4 flex items-center justify-between">
 					<div className="flex items-center space-x-3">
 						<h2 className="text-base font-medium text-gray-900">
-							My Awesome Project
+							{projectName || "My Awesome Project"}
 						</h2>
-						<span className="px-2 py-1 rounded-full bg-gradient-to-r from-indigo-500/10 to-blue-500/10 text-indigo-700 text-xs font-medium">
-							In Progress
-						</span>
 					</div>
 					<button
 						onClick={() => {}} // if logged in Save changes to firebase else create an account
@@ -180,10 +186,10 @@ export function DashboardLayout() {
 				<main className="flex-1 overflow-hidden p-4">
 					<div className="h-full rounded-xl bg-white border shadow-sm overflow-hidden">
 						{/* Render appropriate tab content based on activeTab state */}
+						{activeTab === "summary" && <Summary />}
 						{activeTab === "features" && <Feature />}
 						{activeTab === "stack" && <Stack />}
 						{activeTab === "roadmap" && <Roadmap />}
-						{activeTab === "summary" && <Summary />}
 					</div>
 				</main>
 			</div>

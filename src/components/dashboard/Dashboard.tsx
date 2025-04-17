@@ -17,11 +17,11 @@ import { Feature } from "@/components/dashboard/tabs/feature/Feature";
 import { Stack } from "@/components/dashboard/tabs/stack/Stack";
 import { Roadmap } from "@/components/dashboard/tabs/roadmap/Roadmap";
 import { Summary } from "@/components/dashboard/tabs/summary/Summary";
+import { ProjectAssistant } from "@/components/dashboard/ProjectAssistant";
 
 export function DashboardLayout() {
 	const [sidebarExpanded, setSidebarExpanded] = useState(true);
 	const [activeTab, setActiveTab] = useState("summary");
-	const [assistantExpanded, setAssistantExpanded] = useState(false);
 	const [projectName, setProjectName] = useState("My Awesome Project");
 
 	useEffect(() => {
@@ -42,10 +42,9 @@ export function DashboardLayout() {
 
 	return (
 		<div className="h-screen w-full bg-gradient-to-br from-gray-50 to-gray-100 flex">
-			{/* Collapsible Sidebar */}
 			<div
 				className={`bg-white border-r flex flex-col transition-all duration-300 ease-in-out relative
-          ${sidebarExpanded ? "w-48" : "w-16"}`}
+          			${sidebarExpanded ? "w-48" : "w-16"}`}
 			>
 				{/* Toggle Button */}
 				<button
@@ -109,60 +108,6 @@ export function DashboardLayout() {
 						);
 					})}
 				</nav>
-
-				{/* Version History Button */}
-				<button className="p-3 border-t border-b text-gray-600 hover:bg-gray-50">
-					{sidebarExpanded ? (
-						<div className="flex items-center space-x-2">
-							<Clock className="w-4 h-4" />
-							<span className="text-sm">History</span>
-						</div>
-					) : (
-						<Clock className="w-4 h-4 mx-auto" />
-					)}
-				</button>
-
-				{/* Project Assistant */}
-				<div
-					className={`flex flex-col transition-all duration-300 ease-in-out
-          ${assistantExpanded ? "h-72" : "h-12"}`}
-				>
-					<button
-						onClick={() => setAssistantExpanded(!assistantExpanded)}
-						className="flex items-center px-3 py-2 bg-gradient-to-r from-indigo-500/5 to-blue-500/5 hover:from-indigo-500/10 hover:to-blue-500/10"
-					>
-						{sidebarExpanded ? (
-							<>
-								<div className="w-6 h-6 rounded-full bg-gradient-to-r from-indigo-500 to-blue-500 flex items-center justify-center">
-									<Sparkles className="w-3 h-3 text-white" />
-								</div>
-								<span className="ml-2 text-sm font-medium text-gray-700">
-									Assistant
-								</span>
-							</>
-						) : (
-							<div className="w-6 h-6 rounded-full bg-gradient-to-r from-indigo-500 to-blue-500 flex items-center justify-center mx-auto">
-								<Sparkles className="w-3 h-3 text-white" />
-							</div>
-						)}
-					</button>
-
-					{/* Chat Interface - Only visible when both sidebar and assistant are expanded */}
-					{sidebarExpanded && assistantExpanded && (
-						<div className="flex-1 flex flex-col p-3">
-							<div className="flex-1 overflow-auto">
-								{/* Messages will go here */}
-							</div>
-							<div className="mt-2">
-								<input
-									type="text"
-									placeholder="Ask anything..."
-									className="w-full px-3 py-2 text-sm rounded-lg border bg-gray-50 focus:bg-white focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
-								/>
-							</div>
-						</div>
-					)}
-				</div>
 			</div>
 
 			{/* Main Content Area */}
@@ -193,6 +138,7 @@ export function DashboardLayout() {
 					</div>
 				</main>
 			</div>
+			<ProjectAssistant />
 		</div>
 	);
 }

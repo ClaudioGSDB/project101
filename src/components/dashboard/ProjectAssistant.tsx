@@ -6,23 +6,31 @@ import {
 	MessageSquare,
 	Clock,
 	Send,
-	X,
 	ChevronLeft,
 	ChevronRight,
 	History,
+	Loader,
 } from "lucide-react";
+
+// Define the structure of a message
+interface Message {
+	id: string;
+	text: string;
+	timestamp: Date;
+	status: "sent" | "processing" | "completed" | "error";
+}
 
 export function ProjectAssistant() {
 	// State for panel and tab management
 	const [isPanelExpanded, setIsPanelExpanded] = useState(true);
 	const [activeTab, setActiveTab] = useState<"assistant" | "history">("assistant");
 	const [message, setMessage] = useState("");
-	const [messages, setMessages] = useState<
-		{ id: string; text: string; timestamp: Date }[]
-	>([]);
+	const [messages, setMessages] = useState<Message[]>([]);
+	const [isProcessing, setIsProcessing] = useState(false);
 
 	// Auto-resizing textarea logic
 	const textareaRef = useRef<HTMLTextAreaElement>(null);
+	const messagesEndRef = useRef<HTMLDivElement>(null);
 
 	// Adjust textarea height based on content
 	useEffect(() => {
@@ -35,21 +43,142 @@ export function ProjectAssistant() {
 		}
 	}, [message]);
 
-	// Handle sending a message
-	const handleSendMessage = () => {
-		if (message.trim() === "") return;
+	// Scroll to bottom when new messages appear
+	useEffect(() => {
+		messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
+	}, [messages]);
 
-		const newMessage = {
+	// Handle sending a message
+	const handleSendMessage = async () => {
+		if (message.trim() === "" || isProcessing) return;
+
+		const newMessage: Message = {
 			id: Date.now().toString(),
 			text: message,
 			timestamp: new Date(),
+			status: "sent",
 		};
 
-		setMessages([...messages, newMessage]);
+		setMessages((prevMessages) => [...prevMessages, newMessage]);
 		setMessage("");
+		setIsProcessing(true);
 
-		// Here you would typically call your API to send the message to your backend
-		// but we're just focusing on UI for now
+		try {
+			// Update message status to processing
+			setMessages((prevMessages) =>
+				prevMessages.map((msg) =>
+					msg.id === newMessage.id ? { ...msg, status: "processing" } : msg
+				)
+			);
+
+			// Send to Gemini and process changes
+			await sendToGemini(newMessage.text, newMessage.id);
+
+			// Update the message status to completed
+			setMessages((prevMessages) =>
+				prevMessages.map((msg) =>
+					msg.id === newMessage.id ? { ...msg, status: "completed" } : msg
+				)
+			);
+		} catch (error) {
+			console.error("Error processing request:", error);
+
+			// Update the message status to error
+			setMessages((prevMessages) =>
+				prevMessages.map((msg) =>
+					msg.id === newMessage.id ? { ...msg, status: "error" } : msg
+				)
+			);
+		} finally {
+			setIsProcessing(false);
+		}
+	};
+
+	// Function to collect project data from localStorage
+	const getProjectData = () => {
+		try {
+			const features = JSON.parse(localStorage.getItem("Features") || "{}");
+			const stack = JSON.parse(localStorage.getItem("Stack") || "{}");
+			const roadmap = JSON.parse(localStorage.getItem("Roadmap") || "{}");
+
+			return {
+				Features: features,
+				Stack: stack,
+				Roadmap: roadmap,
+			};
+		} catch (error) {
+			console.error("Error parsing project data from localStorage:", error);
+			throw new Error("Could not load project data");
+		}
+	};
+
+	// Function to update localStorage with the changes
+	const updateProject = (updatedData: any) => {
+		try {
+			// Update each localStorage item with its corresponding data
+			if (updatedData.Features) {
+				localStorage.setItem("Features", JSON.stringify(updatedData.Features));
+			}
+
+			if (updatedData.Stack) {
+				localStorage.setItem("Stack", JSON.stringify(updatedData.Stack));
+			}
+
+			if (updatedData.Roadmap) {
+				localStorage.setItem("Roadmap", JSON.stringify(updatedData.Roadmap));
+			}
+
+			// Force a UI refresh - this is a simple approach
+			// In a real app, you might use a state management solution
+			window.dispatchEvent(new Event("storage"));
+
+			return true;
+		} catch (error) {
+			console.error("Error updating project data:", error);
+			throw new Error("Failed to update project data");
+		}
+	};
+
+	// Function to send data to Gemini API and process response
+	const sendToGemini = async (userMessage: string, messageId: string) => {
+		try {
+			// Get all project data
+			const projectData = getProjectData();
+
+			// Prepare the payload for Gemini
+			const payload = {
+				userMessage: userMessage,
+				projectData: projectData,
+				generationType: "ProjectUpdate",
+			};
+
+			// Send to API
+			const response = await fetch("/api/gemini", {
+				method: "POST",
+				headers: {
+					"Content-Type": "application/json",
+				},
+				body: JSON.stringify(payload),
+			});
+
+			if (!response.ok) {
+				throw new Error(`API responded with status ${response.status}`);
+			}
+
+			const data = await response.json();
+
+			// Check if the response contains the updated project data
+			if (data.message && typeof data.message === "object") {
+				// Update the project with the changes
+				updateProject(data.message);
+				return true;
+			} else {
+				throw new Error("Invalid response format from API");
+			}
+		} catch (error) {
+			console.error("Error in Gemini processing:", error);
+			throw error;
+		}
 	};
 
 	// Handle key press (send on Enter without Shift)
@@ -133,20 +262,46 @@ export function ProjectAssistant() {
 							messages.map((msg) => (
 								<div
 									key={msg.id}
-									className="bg-white p-3 rounded-lg shadow-sm border border-gray-100"
+									className={`p-3 rounded-lg shadow-sm border ${
+										msg.status === "error"
+											? "border-red-200 bg-red-50"
+											: "border-gray-100 bg-white"
+									}`}
 								>
 									<div className="text-gray-700 text-sm whitespace-pre-wrap">
 										{msg.text}
 									</div>
-									<div className="text-xs text-gray-400 mt-1">
-										{new Date(msg.timestamp).toLocaleTimeString([], {
-											hour: "2-digit",
-											minute: "2-digit",
-										})}
+									<div className="text-xs text-gray-400 mt-1 flex justify-between items-center">
+										<span>
+											{new Date(msg.timestamp).toLocaleTimeString(
+												[],
+												{
+													hour: "2-digit",
+													minute: "2-digit",
+												}
+											)}
+										</span>
+										{msg.status === "processing" && (
+											<span className="flex items-center text-amber-500">
+												<Loader className="w-3 h-3 mr-1 animate-spin" />
+												Processing...
+											</span>
+										)}
+										{msg.status === "completed" && (
+											<span className="text-green-500">
+												Applied
+											</span>
+										)}
+										{msg.status === "error" && (
+											<span className="text-red-500">
+												Failed to apply
+											</span>
+										)}
 									</div>
 								</div>
 							))
 						)}
+						<div ref={messagesEndRef} />
 					</div>
 
 					{/* Input Area */}
@@ -160,18 +315,23 @@ export function ProjectAssistant() {
 								placeholder="Modify your project..."
 								className="w-full resize-none overflow-hidden bg-gray-50 border rounded-lg px-3 py-2 pr-10 min-h-[44px] max-h-[200px] focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 text-gray-700"
 								rows={1}
+								disabled={isProcessing}
 							/>
 							<Button
 								onClick={handleSendMessage}
-								disabled={message.trim() === ""}
-								className={`absolute right-1 top-1/2 transform -translate-y-4 p-1.5 h-auto rounded-md ${
-									message.trim() === ""
+								disabled={message.trim() === "" || isProcessing}
+								className={`absolute right-1 top-1/2 transform -translate-y-1/2 p-1.5 h-auto rounded-md ${
+									message.trim() === "" || isProcessing
 										? "text-gray-300"
 										: "text-indigo-500 hover:text-indigo-600 hover:bg-indigo-50"
 								}`}
 								variant="ghost"
 							>
-								<Send className="h-5 w-5" />
+								{isProcessing ? (
+									<Loader className="h-5 w-5 animate-spin" />
+								) : (
+									<Send className="h-5 w-5" />
+								)}
 							</Button>
 						</div>
 						<div className="text-xs text-gray-500 mt-2 flex items-center">
@@ -189,6 +349,7 @@ export function ProjectAssistant() {
 							<button
 								onClick={() => setMessage("")}
 								className="text-gray-400 hover:text-gray-600"
+								disabled={isProcessing}
 							>
 								Clear
 							</button>

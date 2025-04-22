@@ -1,4 +1,5 @@
 const { GoogleGenerativeAI } = require("@google/generative-ai");
+import { jsonrepair } from "jsonrepair";
 
 if (!process.env.GEMINI_API_KEY) {
 	throw new Error("Missing Gemini API Key");
@@ -135,6 +136,32 @@ IMPORTANT REMINDERS:
 - Ensure dependency relationships make logical sense
 `;
 
+// Project update prompt
+const projectUpdatePrompt = `
+You are a JSON generator for project updates. Your task is to modify project data based on user instructions.
+
+REQUIRED OUTPUT FORMAT:
+{
+  "Features": { ... updated Features data ... },
+  "Stack": { ... updated Stack data ... },
+  "Roadmap": { ... updated Roadmap data ... }
+}
+
+INSTRUCTIONS:
+1. The user will provide a message requesting changes to their project.
+2. The current project data will be provided in JSON format containing Features, Stack, and Roadmap objects.
+3. You must analyze the user's request and modify the appropriate parts of the JSON.
+4. Return the COMPLETE updated project data, maintaining the same structure but with the requested changes applied.
+5. Do not add any explanation or commentary outside the JSON.
+
+IMPORTANT GUIDELINES:
+- Maintain all existing object structures and naming conventions.
+- Make minimal changes - only modify what's explicitly requested.
+- Ensure all IDs remain consistent and create new unique IDs for new items.
+- Keep the same format for timestamps and dates.
+- Make changes as natural as possible - they should fit with the existing project.
+`;
+
 const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY);
 
 // Generate Feature object
@@ -202,4 +229,41 @@ async function generateRoadmap(
 	);
 }
 
-export { genAI, generateFeature, generateStack, generateRoadmap };
+// Process project updates based on user messages
+async function processProjectUpdate(userMessage: string, projectData: any) {
+	const model = genAI.getGenerativeModel({
+		model: modelVersion,
+		systemInstruction: projectUpdatePrompt,
+	});
+
+	const chat = model.startChat({
+		history: [],
+		generationConfig: {
+			responseMimeType: "application/json",
+		},
+	});
+
+	// Send the user message and project data to Gemini
+	const response = await chat.sendMessage(`
+    User message: ${userMessage}
+    
+    Current project data: ${JSON.stringify(projectData)}
+    
+    Please analyze the user message and return an updated version of the project data with any requested changes applied.
+  `);
+
+	const responseText = response.text();
+
+	// Direct parsing without repair
+	let result;
+	try {
+		result = JSON.parse(responseText);
+	} catch (jsonError) {
+		console.error("JSON parse error:", jsonError);
+		throw new Error("Unable to process response: Invalid JSON format");
+	}
+
+	return result;
+}
+
+export { genAI, generateFeature, generateStack, generateRoadmap, processProjectUpdate };

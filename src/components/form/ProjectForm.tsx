@@ -15,6 +15,8 @@ import Goal from "@/components/form/sections/Goal";
 import Interests from "@/components/form/sections/Interests";
 import Practical from "@/components/form/sections/Practical";
 import Additional from "./sections/Additional";
+import { LoadingSpinner } from "../ui/spinner";
+import { useRouter } from "next/navigation";
 
 type Section = {
 	title: string;
@@ -56,6 +58,8 @@ const sections: Section[] = [
 export default function ProjectForm() {
 	const [currentSection, setCurrentSection] = useState(0);
 	const [formData, setFormData] = useState<FormData>(initialFormData);
+	const [loadingForm, setLoadingForm] = useState<Boolean>(false);
+	const router = useRouter();
 
 	useEffect(() => {
 		console.log(formData);
@@ -79,6 +83,7 @@ export default function ProjectForm() {
 	};
 
 	async function sendPrompt() {
+		setLoadingForm(true);
 		try {
 			// Step 1: Generate Features
 			const featureResponse = await fetch("/api/gemini", {
@@ -135,6 +140,8 @@ export default function ProjectForm() {
 			localStorage.setItem("generationComplete", "true");
 		} catch (error) {
 			console.error("Error generating project:", error);
+		} finally {
+			router.push("/dashboard");
 		}
 	}
 
@@ -142,83 +149,81 @@ export default function ProjectForm() {
 	return (
 		<div className="relative min-h-screen flex justify-center items-center bg-gray-50 overflow-hidden">
 			{/* Blurred Background */}
-			<div className="absolute inset-0 bg-gradient-to-br from-indigo-500/30 to-blue-500/30 blur-3xl opacity-50"></div>
-			<div className="relative flex">
-				{/* Progress indicator */}
-				<div className="absolute -left-64 top-1/2 -translate-y-1/2 flex flex-col items-center gap-4">
-					{sections.map((section, index) => (
-						<div key={index} className="relative flex justify-center w-full">
-							{/* Connecting line */}
-							{index < sections.length - 1 && (
-								<div className="absolute top-full left-1/2 h-4 w-0.5 bg-gray-200">
-									<div
-										className={`absolute top-0 left-0 w-full transition-all duration-500 ease-out bg-gradient-to-b from-indigo-500 to-blue-500
-											${index < currentSection ? "h-full" : "h-0"}`}
-									/>
-								</div>
-							)}
+			{loadingForm ? <LoadingSpinner></LoadingSpinner>: 
+				<><div className="absolute inset-0 bg-gradient-to-br from-indigo-500/30 to-blue-500/30 blur-3xl opacity-50"></div><div className="relative flex">
+					{/* Progress indicator */}
+					<div className="absolute -left-64 top-1/2 -translate-y-1/2 flex flex-col items-center gap-4">
+						{sections.map((section, index) => (
+							<div key={index} className="relative flex justify-center w-full">
+								{/* Connecting line */}
+								{index < sections.length - 1 && (
+									<div className="absolute top-full left-1/2 h-4 w-0.5 bg-gray-200">
+										<div
+											className={`absolute top-0 left-0 w-full transition-all duration-500 ease-out bg-gradient-to-b from-indigo-500 to-blue-500
+												${index < currentSection ? "h-full" : "h-0"}`} />
+									</div>
+								)}
 
-							{/* Progress square with text */}
-							<div
-								className={`px-4 py-3 rounded-xl flex items-center gap-3 transition-all duration-300
-									${
-										index <= currentSection
+								{/* Progress square with text */}
+								<div
+									className={`px-4 py-3 rounded-xl flex items-center gap-3 transition-all duration-300
+										${index <= currentSection
 											? "bg-gradient-to-tr from-indigo-500 to-blue-500 text-white shadow-lg"
-											: "bg-white border-2 border-gray-200 text-gray-400"
-									}`}
-							>
-								<span className="font-medium w-6 h-6 flex-shrink-0 flex items-center justify-center bg-white/10 rounded-md">
-									{index + 1}
-								</span>
-								<span className="text-sm font-medium whitespace-nowrap">
-									{section.title}
-								</span>
+											: "bg-white border-2 border-gray-200 text-gray-400"}`}
+								>
+									<span className="font-medium w-6 h-6 flex-shrink-0 flex items-center justify-center bg-white/10 rounded-md">
+										{index + 1}
+									</span>
+									<span className="text-sm font-medium whitespace-nowrap">
+										{section.title}
+									</span>
+								</div>
 							</div>
-						</div>
-					))}
-				</div>
+						))}
+					</div>
 
-				{/* Main form card */}
-				<Card className="w-[768px]">
-					<CardHeader>
-						<CardTitle className="px-2">
-							{sections[currentSection].title}
-						</CardTitle>
-						<p className="text-gray-500 mt-2 px-2">
-							{sections[currentSection].description}
-						</p>
-					</CardHeader>
-					<CardContent className="relative">
-						<div className="max-h-[60vh] custom-scrollbar px-2">
-							{renderSectionContent()}
-						</div>
-					</CardContent>
-					<CardFooter className="flex justify-between px-9">
-						<Button
-							variant="outline"
-							disabled={currentSection === 0}
-							onClick={() => setCurrentSection(currentSection - 1)}
-						>
-							Back
-						</Button>
-						{currentSection !== sections.length - 1 ? (
+					{/* Main form card */}
+					<Card className="w-[768px]">
+						<CardHeader>
+							<CardTitle className="px-2">
+								{sections[currentSection].title}
+							</CardTitle>
+							<p className="text-gray-500 mt-2 px-2">
+								{sections[currentSection].description}
+							</p>
+						</CardHeader>
+						<CardContent className="relative">
+							<div className="max-h-[60vh] custom-scrollbar px-2">
+								{renderSectionContent()}
+							</div>
+						</CardContent>
+						<CardFooter className="flex justify-between px-9">
 							<Button
-								className="bg-gradient-to-r from-indigo-500 to-blue-500 hover:from-indigo-600 hover:to-blue-600 hover:scale-105 transition-transform duration-300"
-								onClick={() => setCurrentSection(currentSection + 1)}
+								variant="outline"
+								disabled={currentSection === 0}
+								onClick={() => setCurrentSection(currentSection - 1)}
 							>
-								Next
+								Back
 							</Button>
-						) : (
-							<Button
-								className="bg-gradient-to-r from-indigo-500 to-blue-500 hover:from-indigo-600 hover:to-blue-600 hover:scale-105 transition-transform duration-300"
-								onClick={() => sendPrompt()}
-							>
-								Submit
-							</Button>
-						)}
-					</CardFooter>
-				</Card>
-			</div>
+							{currentSection !== sections.length - 1 ? (
+								<Button
+									className="bg-gradient-to-r from-indigo-500 to-blue-500 hover:from-indigo-600 hover:to-blue-600 hover:scale-105 transition-transform duration-300"
+									onClick={() => setCurrentSection(currentSection + 1)}
+								>
+									Next
+								</Button>
+							) : (
+								<Button
+									className="bg-gradient-to-r from-indigo-500 to-blue-500 hover:from-indigo-600 hover:to-blue-600 hover:scale-105 transition-transform duration-300"
+									onClick={() => sendPrompt()}
+								>
+									Submit
+								</Button>
+							)}
+						</CardFooter>
+					</Card>
+				</div></>
+			}
 		</div>
 	);
 }

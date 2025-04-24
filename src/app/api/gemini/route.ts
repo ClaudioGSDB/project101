@@ -71,9 +71,29 @@ export async function POST(req: Request) {
 			const projectData = body.projectData;
 
 			// Process the update request
+			console.log("Project Update Req:", userMessage, projectData);
 			const result = await processProjectUpdate(userMessage, projectData);
 
-			return NextResponse.json({ message: result }, { status: 200 });
+			const responseText = result.response.text();
+			let validResponse;
+
+			try {
+				JSON.parse(responseText);
+				validResponse = responseText;
+			} catch (jsonError) {
+				try {
+					const repairedJson = jsonrepair(responseText);
+					JSON.parse(repairedJson);
+					validResponse = repairedJson;
+				} catch (repairError) {
+					throw new Error("Unable to process response: Invalid JSON format");
+				}
+			}
+
+			return NextResponse.json(
+				{ message: JSON.parse(validResponse) },
+				{ status: 200 }
+			);
 		} else {
 			throw new Error("Invalid generation type specified");
 		}

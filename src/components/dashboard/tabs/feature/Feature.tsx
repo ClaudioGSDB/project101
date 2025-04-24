@@ -4,15 +4,15 @@ import React, { useState, useEffect } from "react";
 import { Search, Plus, ChevronDown, ChevronUp } from "lucide-react";
 import { FeatureCard } from "./featureCard/FeatureCard";
 import { FeatureDetail } from "./featureDetail/FeatureDetail";
-import { sampleData, AIFeature, AICategory } from "./sampleData";
+import { sampleData, AIFeature, AICategory, AIResponse } from "./sampleData";
 
 // Get feature data from localStorage
 const storedFeatureData = localStorage.getItem("Features");
-const featureData = storedFeatureData
+const defaultFeatureData = storedFeatureData
 	? JSON.parse(storedFeatureData) ?? sampleData
 	: sampleData;
 
-console.log("Feature data:", featureData);
+console.log("Feature data:", defaultFeatureData);
 
 export function Feature() {
 	// State for managing expanded categories
@@ -29,13 +29,32 @@ export function Feature() {
 
 	// State for highlighting related features
 	const [highlightedFeatureIds, setHighlightedFeatureIds] = useState<string[]>([]);
+	const [featureData, setFeatureData] = useState<AIResponse>(defaultFeatureData);
+
+	useEffect(() => {
+		const handleUpdate = () => {
+			const storedFeatureData = JSON.parse(localStorage.getItem("Features") || "{}");
+			if (storedFeatureData) {
+				setFeatureData(storedFeatureData);
+				console.log("handled feature update", storedFeatureData);
+			}
+		};
+	
+		handleUpdate();
+	
+		window.addEventListener("featuresUpdated", handleUpdate);
+	
+		return () => {
+			window.removeEventListener("featuresUpdated", handleUpdate);
+		};
+	}, []);
 
 	// Initialize with first category expanded
 	useEffect(() => {
 		if (featureData.categories.length > 0) {
 			setExpandedCategories([featureData.categories[0].category_id]);
 		}
-	}, []);
+	}, [featureData]);
 
 	// Toggle category expansion
 	const toggleCategory = (categoryId: string) => {

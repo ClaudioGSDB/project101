@@ -58,7 +58,8 @@ export function ProjectAssistant() {
 			timestamp: new Date(),
 			status: "sent",
 		};
-
+		
+		
 		setMessages((prevMessages) => [...prevMessages, newMessage]);
 		setMessage("");
 		setIsProcessing(true);
@@ -72,6 +73,7 @@ export function ProjectAssistant() {
 			);
 
 			// Send to Gemini and process changes
+			console.log("Sending to Gemini", newMessage.text, newMessage.id);
 			await sendToGemini(newMessage.text, newMessage.id);
 
 			// Update the message status to completed
@@ -118,14 +120,18 @@ export function ProjectAssistant() {
 			// Update each localStorage item with its corresponding data
 			if (updatedData.Features) {
 				localStorage.setItem("Features", JSON.stringify(updatedData.Features));
+				console.log("Firing Event");
+				window.dispatchEvent(new Event("featuresUpdated"));
 			}
 
 			if (updatedData.Stack) {
 				localStorage.setItem("Stack", JSON.stringify(updatedData.Stack));
+				window.dispatchEvent(new Event("stackUpdated"));
 			}
 
 			if (updatedData.Roadmap) {
 				localStorage.setItem("Roadmap", JSON.stringify(updatedData.Roadmap));
+				window.dispatchEvent(new Event("roadmapUpdated"));
 			}
 
 			// Force a UI refresh - this is a simple approach
@@ -153,6 +159,7 @@ export function ProjectAssistant() {
 			};
 
 			// Send to API
+			console.log("Sending payload", payload);
 			const response = await fetch("/api/gemini", {
 				method: "POST",
 				headers: {
@@ -160,12 +167,15 @@ export function ProjectAssistant() {
 				},
 				body: JSON.stringify(payload),
 			});
+			console.log("Gemini Response:", response);
 
 			if (!response.ok) {
 				throw new Error(`API responded with status ${response.status}`);
 			}
 
 			const data = await response.json();
+
+			console.log(data);
 
 			// Check if the response contains the updated project data
 			if (data.message && typeof data.message === "object") {

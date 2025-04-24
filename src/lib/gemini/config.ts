@@ -244,7 +244,7 @@ async function processProjectUpdate(userMessage: string, projectData: any) {
 	});
 
 	// Send the user message and project data to Gemini
-	const response = await chat.sendMessage(`
+	return await chat.sendMessage(`
     User message: ${userMessage}
     
     Current project data: ${JSON.stringify(projectData)}
@@ -252,18 +252,20 @@ async function processProjectUpdate(userMessage: string, projectData: any) {
     Please analyze the user message and return an updated version of the project data with any requested changes applied.
   `);
 
-	const responseText = response.text();
+  //console.log("Message Response:", response);
+
+	//const responseText = response.text();
 
 	// Direct parsing without repair
-	let result;
-	try {
-		result = JSON.parse(responseText);
-	} catch (jsonError) {
-		console.error("JSON parse error:", jsonError);
-		throw new Error("Unable to process response: Invalid JSON format");
-	}
+	// let result;
+	// try {
+	// 	result = JSON.parse(responseText);
+	// } catch (jsonError) {
+	// 	console.error("JSON parse error:", jsonError);
+	// 	throw new Error("Unable to process response: Invalid JSON format");
+	// }
 
-	return result;
+	// return result;
 }
 
 export { genAI, generateFeature, generateStack, generateRoadmap, processProjectUpdate };

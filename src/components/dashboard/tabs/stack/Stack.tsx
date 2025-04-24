@@ -1,6 +1,6 @@
 // src/components/dashboard/tabs/stack/Stack.tsx
 "use client";
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { Card } from "@/components/ui/card";
 import {
 	ExternalLink,
@@ -18,16 +18,35 @@ import { motion, AnimatePresence } from "framer-motion";
 
 // Get stack data from localStorage
 const storedStackData = localStorage.getItem("Stack");
-const stackData = storedStackData
+const defaultStackData = storedStackData
 	? JSON.parse(storedStackData) ?? sampleData
 	: sampleData;
 
-console.log("Stack data:", stackData);
+console.log("Stack data:", defaultStackData);
 
 export function Stack() {
 	const [viewMode, setViewMode] = useState<"list" | "visual">("list");
-	const [activeCategory, setActiveCategory] = useState(stackData.categories[0].id);
 	const [activeTech, setActiveTech] = useState<string | null>(null);
+	const [stackData, setStackData] = useState<TechStackResponse>(defaultStackData);
+	const [activeCategory, setActiveCategory] = useState(stackData.categories[0].id);
+	
+	useEffect(() => {
+		const handleUpdate = () => {
+			const storedStackData = JSON.parse(localStorage.getItem("Stack") || "{}");
+			if (storedStackData) {
+				setStackData(storedStackData);
+				console.log("handled stack update", storedStackData);
+			}
+		};
+	
+		handleUpdate();
+	
+		window.addEventListener("stackUpdated", handleUpdate);
+	
+		return () => {
+			window.removeEventListener("stackUpdated", handleUpdate);
+		};
+	}, []);
 
 	// Get current category
 	const currentCategory = stackData.categories.find(

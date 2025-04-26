@@ -13,14 +13,6 @@ import {
 } from "lucide-react";
 import { sampleRoadmapData, Milestone, Task, RoadmapData } from "./Sample";
 
-// Get roadmap data from localStorage
-const storedRoadmapData = localStorage.getItem("Roadmap");
-const defaultRoadmapData = storedRoadmapData
-	? JSON.parse(storedRoadmapData) ?? sampleRoadmapData
-	: sampleRoadmapData;
-
-console.log("Roadmap data:", defaultRoadmapData);
-
 // Define milestone columns
 const columns = [
 	{ id: "milestone1", name: "Milestone 1" },
@@ -33,25 +25,25 @@ export function Roadmap() {
 	const [expandedMilestones, setExpandedMilestones] = useState<Set<string>>(new Set());
 	const [searchQuery, setSearchQuery] = useState("");
 
-	const [roadmapData, setRoadmapData] = useState<RoadmapData>(defaultRoadmapData);
-	
-		useEffect(() => {
-			const handleUpdate = () => {
-				const storedRoadmapData = JSON.parse(localStorage.getItem("Roadmap") || "{}");
-				if (storedRoadmapData) {
-					setRoadmapData(storedRoadmapData);
-					console.log("handled roadmap update", storedRoadmapData);
-				}
-			};
-		
-			handleUpdate();
-		
-			window.addEventListener("roadmapUpdated", handleUpdate);
-		
-			return () => {
-				window.removeEventListener("roadmapUpdated", handleUpdate);
-			};
-		}, []);
+	const [roadmapData, setRoadmapData] = useState<RoadmapData>(sampleRoadmapData);
+
+	useEffect(() => {
+		const handleUpdate = () => {
+			const storedRoadmapData = JSON.parse(localStorage.getItem("Roadmap") || "{}");
+			if (storedRoadmapData) {
+				setRoadmapData(storedRoadmapData);
+				console.log("handled roadmap update", storedRoadmapData);
+			}
+		};
+
+		handleUpdate();
+
+		window.addEventListener("roadmapUpdated", handleUpdate);
+
+		return () => {
+			window.removeEventListener("roadmapUpdated", handleUpdate);
+		};
+	}, []);
 
 	// Toggle a milestone's expanded state
 	const toggleMilestone = (id: string) => {

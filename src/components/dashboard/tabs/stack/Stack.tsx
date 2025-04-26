@@ -16,20 +16,12 @@ import StackVisual from "./StackVisual";
 import { sampleData, TechStackResponse, Category, Technology } from "./sample";
 import { motion, AnimatePresence } from "framer-motion";
 
-// Get stack data from localStorage
-const storedStackData = localStorage.getItem("Stack");
-const defaultStackData = storedStackData
-	? JSON.parse(storedStackData) ?? sampleData
-	: sampleData;
-
-console.log("Stack data:", defaultStackData);
-
 export function Stack() {
 	const [viewMode, setViewMode] = useState<"list" | "visual">("list");
 	const [activeTech, setActiveTech] = useState<string | null>(null);
-	const [stackData, setStackData] = useState<TechStackResponse>(defaultStackData);
+	const [stackData, setStackData] = useState<TechStackResponse>(sampleData);
 	const [activeCategory, setActiveCategory] = useState(stackData.categories[0].id);
-	
+
 	useEffect(() => {
 		const handleUpdate = () => {
 			const storedStackData = JSON.parse(localStorage.getItem("Stack") || "{}");
@@ -38,11 +30,11 @@ export function Stack() {
 				console.log("handled stack update", storedStackData);
 			}
 		};
-	
+
 		handleUpdate();
-	
+
 		window.addEventListener("stackUpdated", handleUpdate);
-	
+
 		return () => {
 			window.removeEventListener("stackUpdated", handleUpdate);
 		};

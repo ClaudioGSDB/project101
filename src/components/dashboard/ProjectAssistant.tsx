@@ -58,8 +58,7 @@ export function ProjectAssistant() {
 			timestamp: new Date(),
 			status: "sent",
 		};
-		
-		
+
 		setMessages((prevMessages) => [...prevMessages, newMessage]);
 		setMessage("");
 		setIsProcessing(true);
@@ -160,13 +159,16 @@ export function ProjectAssistant() {
 
 			// Send to API
 			console.log("Sending payload", payload);
-			const response = await fetch("/api/gemini", {
-				method: "POST",
-				headers: {
-					"Content-Type": "application/json",
-				},
-				body: JSON.stringify(payload),
-			});
+			const response = await fetch(
+				"https://dr8rn41bv4.execute-api.us-east-2.amazonaws.com/GeminiStage",
+				{
+					method: "POST",
+					headers: {
+						"Content-Type": "application/json",
+					},
+					body: JSON.stringify(payload),
+				}
+			);
 			console.log("Gemini Response:", response);
 
 			if (!response.ok) {

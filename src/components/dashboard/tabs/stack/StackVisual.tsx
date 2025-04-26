@@ -4,14 +4,6 @@ import React, { useState, useEffect, useRef } from "react";
 import { Category, sampleData } from "./sample";
 import { motion, AnimatePresence } from "framer-motion";
 
-// Get stack data from localStorage - ensure both components use the same data
-const storedStackData = localStorage.getItem("Stack");
-const stackData = storedStackData
-	? JSON.parse(storedStackData) ?? sampleData
-	: sampleData;
-
-console.log("Stack visual data:", stackData);
-
 // Map gradients to explicit hex colors for consistent rendering
 const gradientColorMap: Record<string, string> = {
 	"from-indigo-500 to-blue-500": "#6366f1", // indigo-500
@@ -25,13 +17,6 @@ const gradientColorMap: Record<string, string> = {
 // Extract color from gradient string
 const getColorFromGradient = (gradient: string): string => {
 	return gradientColorMap[gradient] || "#64748b"; // Default to slate-500
-};
-
-// Calculate the total number of technologies
-const getTotalTechCount = () => {
-	return stackData.categories.reduce((acc: number, category: Category) => {
-		return acc + category.technologies.length;
-	}, 0);
 };
 
 interface Bubble {
@@ -49,13 +34,36 @@ interface Bubble {
 }
 
 const StackVisual = () => {
+	const [stackData, setStackData] = useState(sampleData);
 	const [bubbles, setBubbles] = useState<Bubble[]>([]);
 	const [hoveredBubble, setHoveredBubble] = useState<string | null>(null);
 	const [selectedBubble, setSelectedBubble] = useState<string | null>(null);
 	const [containerSize, setContainerSize] = useState({ width: 0, height: 0 });
 	const containerRef = useRef<HTMLDivElement>(null);
 	const animationRef = useRef<number | null>(null);
-	const totalTechnologies = getTotalTechCount();
+
+	useEffect(() => {
+		const [stackData, setStackData] = useState(sampleData);
+		if (typeof window !== "undefined") {
+			const storedStackData = localStorage.getItem("Stack");
+			if (storedStackData) {
+				try {
+					const parsedData = JSON.parse(storedStackData);
+					setStackData(parsedData);
+				} catch (error) {
+					console.error("Error parsing Stack data:", error);
+				}
+			}
+		}
+	}, []);
+
+	// Calculate the total number of technologies
+	const totalTechnologies = stackData.categories.reduce(
+		(acc: number, category: Category) => {
+			return acc + category.technologies.length;
+		},
+		0
+	);
 
 	// Initialize bubbles
 	useEffect(() => {
@@ -74,7 +82,6 @@ const StackVisual = () => {
 
 		// Organize bubbles by category for positioning
 		const categories = stackData.categories;
-		const techCount = getTotalTechCount();
 
 		// Distribute categories around the circle
 		categories.forEach((category: Category, categoryIndex: number) => {

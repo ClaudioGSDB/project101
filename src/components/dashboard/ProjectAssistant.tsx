@@ -203,7 +203,7 @@ export function ProjectAssistant() {
 
 	return (
 		<div
-			className={`h-full flex flex-col bg-white border-l transition-all duration-300 overflow-hidden ${
+			className={`h-full flex flex-col bg-white border-l transition-all duration-300 relative ${
 				isPanelExpanded ? "w-96" : "w-0"
 			}`}
 		>

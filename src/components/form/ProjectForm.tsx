@@ -1,6 +1,6 @@
 // Path: src/components/form/ProjectForm.tsx
 "use client";
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useRef } from "react";
 import {
 	Card,
 	CardContent,
@@ -60,10 +60,18 @@ export default function ProjectForm() {
 	const [formData, setFormData] = useState<FormData>(initialFormData);
 	const [loadingForm, setLoadingForm] = useState<Boolean>(false);
 	const router = useRouter();
+	const contentRef = useRef<HTMLDivElement>(null);
 
 	// useEffect(() => {
 	// 	console.log(formData);
 	// }, [formData]);
+
+	//Make sure to reset the scroll position when the section changes
+	useEffect(() => {
+		if (contentRef.current) {
+			contentRef.current.scrollTop = 0;
+		}
+	}, [currentSection]);
 
 	const renderSectionContent = () => {
 		switch (sections[currentSection].type) {
@@ -218,7 +226,10 @@ export default function ProjectForm() {
 								</p>
 							</CardHeader>
 							<CardContent className="relative">
-								<div className="max-h-[60vh] custom-scrollbar px-2">
+								<div
+									className="max-h-[60vh] custom-scrollbar px-2"
+									ref={contentRef}
+								>
 									{renderSectionContent()}
 								</div>
 							</CardContent>
